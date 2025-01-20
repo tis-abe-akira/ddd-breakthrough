@@ -1,0 +1,254 @@
+# シンジケートローン管理システム
+
+## 概要
+このシステムは、シンジケートローンの管理を行うためのバックエンドAPIを提供します。
+主な機能として、ファシリティの管理、投資の管理、ドローダウン、各種支払い（手数料、利息、元本）の管理を行います。
+
+## 技術スタック
+- Java 17
+- Spring Boot 3.2
+- Maven 3
+- H2 Database (開発用インメモリデータベース)
+
+## セットアップと起動方法
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+## 初期データの投入
+
+動作確認のために、まず以下の順序でマスターデータを登録します：
+
+### 1. 借り手の登録
+```bash
+curl -X POST http://localhost:8080/api/borrowers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Intel Corporation",
+    "creditRating": "A+",
+    "industry": "Technology"
+  }'
+```
+
+### 2. 投資家の登録
+```bash
+# 投資家1の登録
+curl -X POST http://localhost:8080/api/investors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "MUFG Bank",
+    "type": "BANK",
+    "investmentCapacity": 1000000000000
+  }'
+
+# 投資家2の登録
+curl -X POST http://localhost:8080/api/investors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Mizuho Bank",
+    "type": "BANK",
+    "investmentCapacity": 1000000000000
+  }'
+```
+
+## 動作確認手順
+
+以下の順序でAPIを呼び出すことで、基本的な機能を確認できます。
+
+### 1. ファシリティの作成
+```bash
+curl -X POST http://localhost:8080/api/facilities \
+  -H "Content-Type: application/json" \
+  -d '{
+    "totalAmount": 1000000000,
+    "availableAmount": 1000000000,
+    "term": 60,
+    "interestRate": 2.5,
+    "borrowerId": 1
+  }'
+```
+
+### 2. ファシリティ投資の登録
+```bash
+curl -X POST http://localhost:8080/api/facility-investments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facilityId": 1,
+    "investorId": 1,
+    "investmentAmount": 500000000,
+    "date": "2024-01-20T10:00:00",
+    "sharePie": {
+      "shares": [
+        {"investorId": 1, "percentage": 50},
+        {"investorId": 2, "percentage": 50}
+      ]
+    }
+  }'
+```
+
+### 3. ドローダウンの実行
+```bash
+curl -X POST http://localhost:8080/api/drawdowns \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facilityId": 1,
+    "drawdownAmount": 100000000,
+    "date": "2024-01-20T14:00:00",
+    "amountPie": {
+      "amounts": [
+        {"investorId": 1, "amount": 50000000},
+        {"investorId": 2, "amount": 50000000}
+      ]
+    }
+  }'
+```
+
+### 4. 手数料支払いの登録と実行
+```bash
+# 手数料支払いの登録
+curl -X POST http://localhost:8080/api/fee-payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facilityId": 1,
+    "feeType": "COMMITMENT_FEE",
+    "paymentAmount": 1000000,
+    "date": "2024-01-20T15:00:00",
+    "amountPie": {
+      "amounts": [
+        {"investorId": 1, "amount": 500000},
+        {"investorId": 2, "amount": 500000}
+      ]
+    }
+  }'
+
+# 手数料支払いの実行
+curl -X PUT http://localhost:8080/api/fee-payments/1/execute
+```
+
+### 5. 利息支払いの登録と実行
+```bash
+# 利息支払いの登録
+curl -X POST http://localhost:8080/api/interest-payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "loanId": 1,
+    "interestRate": 2.5,
+    "interestStartDate": "2024-01-20",
+    "interestEndDate": "2024-02-20",
+    "date": "2024-02-20T10:00:00",
+    "amountPie": {
+      "amounts": [
+        {"investorId": 1, "amount": 104166},
+        {"investorId": 2, "amount": 104166}
+      ]
+    }
+  }'
+
+# 利息支払いの実行
+curl -X PUT http://localhost:8080/api/interest-payments/1/execute
+```
+
+### 6. 元本返済の登録と実行
+```bash
+# 元本返済の登録
+curl -X POST http://localhost:8080/api/principal-payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "loanId": 1,
+    "paymentAmount": 10000000,
+    "date": "2024-02-20T11:00:00",
+    "amountPie": {
+      "amounts": [
+        {"investorId": 1, "amount": 5000000},
+        {"investorId": 2, "amount": 5000000}
+      ]
+    }
+  }'
+
+# 元本返済の実行
+curl -X PUT http://localhost:8080/api/principal-payments/1/execute
+```
+
+### データの確認
+各APIの実行結果は、以下のGETリクエストで確認できます：
+
+```bash
+# ファシリティ投資一覧
+curl http://localhost:8080/api/facility-investments
+
+# ドローダウン一覧
+curl http://localhost:8080/api/drawdowns
+
+# 手数料支払い一覧
+curl http://localhost:8080/api/fee-payments
+
+# 利息支払い一覧
+curl http://localhost:8080/api/interest-payments
+
+# 元本返済一覧
+curl http://localhost:8080/api/principal-payments
+```
+
+## データベースの参照方法
+
+本システムはH2データベースをインメモリモードで使用しています。
+データベースの内容は以下の方法で確認できます：
+
+### 1. H2 Consoleへのアクセス
+アプリケーション起動後、ブラウザで以下のURLにアクセスします：
+```
+http://localhost:8080/h2-console
+```
+
+### 2. 接続設定
+H2 Console画面で以下の設定を入力します：
+- JDBC URL: `jdbc:h2:mem:testdb`
+- User Name: `sa`
+- Password: (空白)
+
+### 3. 主要なテーブルと参照用SQL
+
+```sql
+-- マスターデータの確認
+SELECT * FROM borrower;
+SELECT * FROM investor;
+
+-- ファシリティの確認
+SELECT * FROM facility;
+
+-- ファシリティ投資の確認
+SELECT * FROM facility_investment;
+
+-- ドローダウンの確認
+SELECT * FROM drawdown;
+
+-- 手数料支払いの確認
+SELECT * FROM fee_payment;
+
+-- 利息支払いの確認
+SELECT * FROM interest_payment;
+
+-- 元本返済の確認
+SELECT * FROM principal_payment;
+
+-- シェアの確認
+SELECT * FROM share_pie;
+SELECT * FROM share_pie_shares;
+
+-- 金額配分の確認
+SELECT * FROM amount_pie;
+SELECT * FROM amount_pie_amounts;
+
+-- 取引の状態確認
+SELECT t.id, t.type, t.date, t.status, t.processed_date
+FROM transaction t
+ORDER BY t.date;
+```
+
+## 注意点
+1. IDは実際のデータベースの状態に応じて適切な値に変更してください
+2. 日付は現在の日付に合わせて調整してください
+3. 金額は実際のビジネスルールに従って設定してください
+4. エラーが発生した場合は、レスポンスのエラーメッセージを確認してください
