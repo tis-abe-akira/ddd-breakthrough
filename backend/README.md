@@ -28,6 +28,9 @@ curl -X POST http://localhost:8080/api/borrowers \
   -d '{
     "name": "Intel Corporation",
     "creditRating": "A+",
+    "financialStatements": "test",
+    "contactInformation": "test",
+    "companyType": "CORPORATION",
     "industry": "Technology"
   }'
 ```
