@@ -11,18 +11,23 @@ import java.util.stream.Collectors;
 
 /**
  * BaseServiceの抽象実装クラス
- * @param <T> エンティティの型
+ * 
+ * @param <T>  エンティティの型
  * @param <ID> IDの型
- * @param <D> DTOの型
- * @param <R> リポジトリの型
+ * @param <D>  DTOの型
+ * @param <R>  リポジトリの型
  */
-public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, ID>> 
-    implements BaseService<T, ID, D> {
+public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, ID>>
+        implements BaseService<T, ID, D> {
 
     protected final R repository;
 
     protected AbstractBaseService(R repository) {
         this.repository = repository;
+    }
+
+    protected R getRepository() {
+        return repository;
     }
 
     @Override
@@ -70,8 +75,9 @@ public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, I
 
     /**
      * エンティティにIDを設定
+     * 
      * @param entity エンティティ
-     * @param id 設定するID
+     * @param id     設定するID
      */
     protected abstract void setEntityId(T entity, ID id);
 }

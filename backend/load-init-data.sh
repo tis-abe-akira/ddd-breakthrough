@@ -14,6 +14,7 @@ curl -X POST http://localhost:8080/api/borrowers \
     "industry": "Technology"
   }'
 
+echo "\n"
 echo "borrowersの初期化"
 curl -X POST http://localhost:8080/api/investors \
   -H "Content-Type: application/json" \
@@ -33,6 +34,7 @@ curl -X POST http://localhost:8080/api/investors \
     "currentInvestments": 0
   }'
 
+echo "\n"
 echo "syndicatesの初期化"
 curl -X POST http://localhost:8080/api/syndicates \
   -H "Content-Type: application/json" \
@@ -42,6 +44,7 @@ curl -X POST http://localhost:8080/api/syndicates \
     "totalCommitment": 5000000
   }'
 
+echo "\n"
 echo "share-piesの初期化"
 curl -X POST http://localhost:8080/api/share-pies \
   -H "Content-Type: application/json" \
@@ -52,4 +55,17 @@ curl -X POST http://localhost:8080/api/share-pies \
     }
   }'
 
-
+echo "\n"
+echo "facilitiesの初期化"
+curl -X POST http://localhost:8080/api/facilities \
+  -H "Content-Type: application/json" \
+  -d '{
+    "totalAmount": 5000000,
+    "availableAmount": 5000000,
+    "startDate": "2025-01-27",
+    "term": 60,
+    "interestRate": 2.5,
+    "syndicateId": 1,
+    "sharePieId": 1,
+    "borrowerId": 1
+  }'

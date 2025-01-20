@@ -88,8 +88,7 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
 
         // シェアパイの設定
         if (dto.getSharePieId() != null) {
-            SharePie sharePie = sharePieService.getRepository().findById(dto.getSharePieId())
-                    .orElseThrow(() -> new BusinessException("SharePie not found", "SHARE_PIE_NOT_FOUND"));
+            SharePie sharePie = sharePieService.getRepository().getReferenceById(dto.getSharePieId());
             entity.setSharePie(sharePie);
         }
 
@@ -190,9 +189,24 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         Facility facility = repository.findById(facilityId)
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
 
-        SharePie sharePie = sharePieService.toEntity(sharePieDto);
-        facility.setSharePie(sharePie);
+        // 既存のSharePieを取得または新規作成
+        SharePie sharePie;
+        if (sharePieDto.getId() != null) {
+            // 既存のSharePieを更新
+            sharePie = sharePieService.findById(sharePieDto.getId())
+                    .map(dto -> {
+                        SharePie entity = sharePieService.toEntity(sharePieDto);
+                        entity.setId(dto.getId());
+                        return sharePieService.getRepository().save(entity);
+                    })
+                    .orElseThrow(() -> new BusinessException("SharePie not found", "SHARE_PIE_NOT_FOUND"));
+        } else {
+            // 新規SharePieを作成
+            sharePie = sharePieService.toEntity(sharePieDto);
+            sharePie = sharePieService.getRepository().save(sharePie);
+        }
 
+        facility.setSharePie(sharePie);
         return toDto(repository.save(facility));
     }
 }
