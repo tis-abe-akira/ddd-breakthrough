@@ -26,6 +26,7 @@ public class InvestorService extends AbstractBaseService<Investor, Long, Investo
         entity.setName(dto.getName());
         entity.setType(dto.getType());
         entity.setInvestmentCapacity(dto.getInvestmentCapacity());
+        entity.setCurrentInvestments(dto.getCurrentInvestments());
         entity.setVersion(dto.getVersion());
         return entity;
     }
@@ -37,6 +38,7 @@ public class InvestorService extends AbstractBaseService<Investor, Long, Investo
                 .name(entity.getName())
                 .type(entity.getType())
                 .investmentCapacity(entity.getInvestmentCapacity())
+                .currentInvestments(entity.getCurrentInvestments())
                 .version(entity.getVersion())
                 .build();
     }
@@ -50,7 +52,7 @@ public class InvestorService extends AbstractBaseService<Investor, Long, Investo
         return repository.findAll().stream()
                 .filter(investor -> name == null || investor.getName().contains(name))
                 .filter(investor -> type == null || investor.getType().equals(type))
-                .filter(investor -> minCapacity == null || 
+                .filter(investor -> minCapacity == null ||
                         investor.getInvestmentCapacity().compareTo(minCapacity) >= 0)
                 .map(this::toDto)
                 .collect(Collectors.toList());

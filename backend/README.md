@@ -37,22 +37,24 @@ curl -X POST http://localhost:8080/api/borrowers \
 
 ### 2. 投資家の登録
 ```bash
-# 投資家1の登録
+# 投資家1の登録 (investmentCapacity: 10,000,000)
 curl -X POST http://localhost:8080/api/investors \
   -H "Content-Type: application/json" \
   -d '{
     "name": "MUFG Bank",
     "type": "BANK",
-    "investmentCapacity": 1000000000000
+    "investmentCapacity": 10000000,
+    "currentInvestments": 0
   }'
 
-# 投資家2の登録
+# 投資家2の登録 (investmentCapacity = 20,000,000)
 curl -X POST http://localhost:8080/api/investors \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Mizuho Bank",
     "type": "BANK",
-    "investmentCapacity": 1000000000000
+    "investmentCapacity": 20000000,
+    "currentInvestments": 0
   }'
 ```
 
@@ -60,20 +62,45 @@ curl -X POST http://localhost:8080/api/investors \
 
 以下の順序でAPIを呼び出すことで、基本的な機能を確認できます。
 
-### 1. ファシリティの作成
+### 1. シンジケートの作成 (totalCommitment: 5,000,000)
+```bash
+curl -X POST http://localhost:8080/api/syndicates \
+  -H "Content-Type: application/json" \
+  -d '{
+    "leadBankId": 1,
+    "memberIds": [1, 2],
+    "totalCommitment": 5000000
+  }'
+```
+
+### 2. シェアパイの作成
+```bash
+curl -X POST http://localhost:8080/api/share-pies \
+  -H "Content-Type: application/json" \
+  -d '{
+    "shares": {
+      "1": 50,
+      "2": 50
+    }
+  }'
+```
+
+### 3. ファシリティの作成
 ```bash
 curl -X POST http://localhost:8080/api/facilities \
   -H "Content-Type: application/json" \
   -d '{
-    "totalAmount": 1000000000,
-    "availableAmount": 1000000000,
+    "totalAmount": 5000000,
+    "availableAmount": 5000000,
     "term": 60,
     "interestRate": 2.5,
-    "borrowerId": 1
+    "borrowerId": 1,
+    "syndicateId": 1,  // 先に作成したシンジケートのID
+    "sharePieId": 1     // 先に作成したシェアパイのID
   }'
 ```
 
-### 2. ファシリティ投資の登録
+### 4. ファシリティ投資の登録
 ```bash
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
@@ -91,7 +118,7 @@ curl -X POST http://localhost:8080/api/facility-investments \
   }'
 ```
 
-### 3. ドローダウンの実行
+### 5. ドローダウンの実行
 ```bash
 curl -X POST http://localhost:8080/api/drawdowns \
   -H "Content-Type: application/json" \
@@ -108,7 +135,7 @@ curl -X POST http://localhost:8080/api/drawdowns \
   }'
 ```
 
-### 4. 手数料支払いの登録と実行
+### 6. 手数料支払いの登録と実行
 ```bash
 # 手数料支払いの登録
 curl -X POST http://localhost:8080/api/fee-payments \
@@ -130,7 +157,7 @@ curl -X POST http://localhost:8080/api/fee-payments \
 curl -X PUT http://localhost:8080/api/fee-payments/1/execute
 ```
 
-### 5. 利息支払いの登録と実行
+### 7. 利息支払いの登録と実行
 ```bash
 # 利息支払いの登録
 curl -X POST http://localhost:8080/api/interest-payments \
@@ -153,7 +180,7 @@ curl -X POST http://localhost:8080/api/interest-payments \
 curl -X PUT http://localhost:8080/api/interest-payments/1/execute
 ```
 
-### 6. 元本返済の登録と実行
+### 8. 元本返済の登録と実行
 ```bash
 # 元本返済の登録
 curl -X POST http://localhost:8080/api/principal-payments \

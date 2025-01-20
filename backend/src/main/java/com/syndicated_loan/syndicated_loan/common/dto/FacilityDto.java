@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Builder
 public class FacilityDto {
     private Long id;
-    private String type;
+    // private String type; // "FACILITY" がEntityの@PrePersistでセットされる
     private BigDecimal amount;
     private BigDecimal totalAmount;
     private BigDecimal availableAmount;

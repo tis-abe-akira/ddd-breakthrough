@@ -1,6 +1,7 @@
 package com.syndicated_loan.syndicated_loan.common.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -8,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @SuperBuilder
 public class InterestPaymentDto extends TransactionDto {
