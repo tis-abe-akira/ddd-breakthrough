@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
+@DiscriminatorValue("FACILITY")
 @Getter
 @Setter
 public class Facility extends Position {
@@ -19,6 +20,9 @@ public class Facility extends Position {
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
+
+    @Column(name = "term", nullable = false)
+    private Integer term;
 
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
@@ -33,5 +37,8 @@ public class Facility extends Position {
     @PrePersist
     public void prePersist() {
         setType("FACILITY");
+        if (startDate != null && term != null) {
+            endDate = startDate.plusMonths(term);
+        }
     }
 }

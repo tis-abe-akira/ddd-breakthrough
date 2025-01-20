@@ -15,15 +15,16 @@ import java.time.LocalDate;
 public class FacilityDto {
     private Long id;
     // private String type; // "FACILITY" がEntityの@PrePersistでセットされる
-    private BigDecimal amount;
     private BigDecimal totalAmount;
     private BigDecimal availableAmount;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDate startDate; // 入力用
+    private Integer term; // 入力用
+    private LocalDate endDate; // レスポンス用
     private BigDecimal interestRate;
     private Long syndicateId;
     private Long sharePieId;
     private Long version;
+    private Long borrowerId;
 
     // レスポンス用の追加フィールド
     private SyndicateDto syndicate;

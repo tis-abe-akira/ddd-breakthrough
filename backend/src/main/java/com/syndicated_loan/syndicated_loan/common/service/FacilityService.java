@@ -8,6 +8,7 @@ import com.syndicated_loan.syndicated_loan.common.dto.SharePieDto;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
 import com.syndicated_loan.syndicated_loan.common.entity.SharePie;
 import com.syndicated_loan.syndicated_loan.common.entity.Syndicate;
+import com.syndicated_loan.syndicated_loan.common.entity.Borrower;
 import com.syndicated_loan.syndicated_loan.common.repository.FacilityRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 
@@ -24,14 +25,17 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
 
     private final SyndicateService syndicateService;
     private final SharePieService sharePieService;
+    private final BorrowerService borrowerService;
 
     public FacilityService(
             FacilityRepository repository,
             SyndicateService syndicateService,
-            SharePieService sharePieService) {
+            SharePieService sharePieService,
+            BorrowerService borrowerService) {
         super(repository);
         this.syndicateService = syndicateService;
         this.sharePieService = sharePieService;
+        this.borrowerService = borrowerService;
     }
 
     @Override
@@ -44,11 +48,36 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         Facility entity = new Facility();
         entity.setId(dto.getId());
         entity.setType("FACILITY");
-        entity.setAmount(dto.getAmount());
+
+        // 必須項目のバリデーション
+        if (dto.getTotalAmount() == null) {
+            throw new BusinessException("Total amount cannot be null", "TOTAL_AMOUNT_REQUIRED");
+        }
+        entity.setAmount(dto.getTotalAmount());
         entity.setTotalAmount(dto.getTotalAmount());
-        entity.setAvailableAmount(dto.getAvailableAmount());
-        entity.setStartDate(dto.getStartDate());
-        entity.setEndDate(dto.getEndDate());
+
+        if (dto.getAvailableAmount() == null) {
+            entity.setAvailableAmount(dto.getTotalAmount());
+        } else {
+            entity.setAvailableAmount(dto.getAvailableAmount());
+        }
+
+        // 日付関連の設定
+        if (dto.getStartDate() == null) {
+            entity.setStartDate(LocalDate.now());
+        } else {
+            entity.setStartDate(dto.getStartDate());
+        }
+
+        if (dto.getTerm() == null) {
+            throw new BusinessException("Term cannot be null", "TERM_REQUIRED");
+        }
+        entity.setTerm(dto.getTerm());
+        entity.setEndDate(entity.getStartDate().plusMonths(dto.getTerm()));
+
+        if (dto.getInterestRate() == null) {
+            throw new BusinessException("Interest rate cannot be null", "INTEREST_RATE_REQUIRED");
+        }
         entity.setInterestRate(dto.getInterestRate());
 
         // シンジケート団の設定
@@ -59,11 +88,19 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
 
         // シェアパイの設定
         if (dto.getSharePieId() != null) {
-            SharePie sharePie = sharePieService.findById(dto.getSharePieId())
-                    .map(sharePieService::toEntity)
+            SharePie sharePie = sharePieService.getRepository().findById(dto.getSharePieId())
                     .orElseThrow(() -> new BusinessException("SharePie not found", "SHARE_PIE_NOT_FOUND"));
             entity.setSharePie(sharePie);
         }
+
+        // borrowerの設定
+        if (dto.getBorrowerId() == null) {
+            throw new BusinessException("Borrower ID cannot be null", "BORROWER_REQUIRED");
+        }
+        Borrower borrower = borrowerService.findById(dto.getBorrowerId())
+                .map(borrowerService::toEntity)
+                .orElseThrow(() -> new BusinessException("Borrower not found", "BORROWER_NOT_FOUND"));
+        entity.setBorrower(borrower);
 
         entity.setVersion(dto.getVersion());
         return entity;
@@ -73,11 +110,10 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
     public FacilityDto toDto(Facility entity) {
         FacilityDto dto = FacilityDto.builder()
                 .id(entity.getId())
-                .type(entity.getType())
-                .amount(entity.getAmount())
                 .totalAmount(entity.getTotalAmount())
                 .availableAmount(entity.getAvailableAmount())
                 .startDate(entity.getStartDate())
+                .term(entity.getTerm())
                 .endDate(entity.getEndDate())
                 .interestRate(entity.getInterestRate())
                 .syndicateId(entity.getSyndicate().getId())
