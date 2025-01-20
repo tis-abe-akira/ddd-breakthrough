@@ -79,8 +79,8 @@ curl -X POST http://localhost:8080/api/share-pies \
   -H "Content-Type: application/json" \
   -d '{
     "shares": {
-      "1": 50,
-      "2": 50
+      "1": 30,
+      "2": 70
     }
   }'
 ```
@@ -92,15 +92,18 @@ curl -X POST http://localhost:8080/api/facilities \
   -d '{
     "totalAmount": 5000000,
     "availableAmount": 5000000,
+    "startDate": "2025-01-27",
     "term": 60,
     "interestRate": 2.5,
-    "borrowerId": 1,
-    "syndicateId": 1,  // 先に作成したシンジケートのID
-    "sharePieId": 1     // 先に作成したシェアパイのID
+    "syndicateId": 1,
+    "sharePieId": 1,
+    "borrowerId": 1
   }'
 ```
 
 ### 4. ファシリティ投資の登録
+TODO: sharePieの登録は2で済んでいると思うので、ここではIDを指定するべきではないか？
+
 ```bash
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
