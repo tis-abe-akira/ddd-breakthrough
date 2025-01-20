@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.SyndicateDto;
-import com.syndicated_loan.syndicated_loan.common.dto.InvestorDto;
 import com.syndicated_loan.syndicated_loan.common.entity.Syndicate;
 import com.syndicated_loan.syndicated_loan.common.entity.Investor;
 import com.syndicated_loan.syndicated_loan.common.repository.SyndicateRepository;
@@ -13,7 +12,6 @@ import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,7 +37,7 @@ public class SyndicateService extends AbstractBaseService<Syndicate, Long, Syndi
     public Syndicate toEntity(SyndicateDto dto) {
         Syndicate entity = new Syndicate();
         entity.setId(dto.getId());
-        
+
         // リード銀行の設定
         Investor leadBank = investorService.findById(dto.getLeadBankId())
                 .map(investorService::toEntity)
@@ -110,7 +108,7 @@ public class SyndicateService extends AbstractBaseService<Syndicate, Long, Syndi
     public SyndicateDto addMember(Long syndicateId, Long investorId) {
         Syndicate syndicate = repository.findById(syndicateId)
                 .orElseThrow(() -> new BusinessException("Syndicate not found", "SYNDICATE_NOT_FOUND"));
-        
+
         Investor investor = investorService.findById(investorId)
                 .map(investorService::toEntity)
                 .orElseThrow(() -> new BusinessException("Investor not found", "INVESTOR_NOT_FOUND"));
