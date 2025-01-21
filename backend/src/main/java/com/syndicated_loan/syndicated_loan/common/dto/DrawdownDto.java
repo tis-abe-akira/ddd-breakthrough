@@ -22,3 +22,25 @@ public class DrawdownDto extends TransactionDto {
     private String drawdownStatus; // ドローダウンのステータス（REQUESTED, APPROVED, EXECUTED など）
     private BigDecimal utilizationRate; // ファシリティの利用率（ドローダウン後）
 }
+
+/*
+
+ date 2025-01-27T00:00:00
+ processedDate
+
+ amount 999
+ positionId
+ amountPieId
+ status
+
+    private Long id;
+    private String type;
+    private LocalDateTime date;
+    private BigDecimal amount;
+    private Long relatedPositionId;
+    private Long amountPieId; //TODO: share pie で分ける場合には未セットで良い？
+    private String status;
+    private LocalDateTime processedDate;
+    private Long version;
+
+ */
