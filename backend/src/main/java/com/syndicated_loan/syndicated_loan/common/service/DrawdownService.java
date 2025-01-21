@@ -37,7 +37,8 @@ public class DrawdownService
         entity.setId(dto.getId());
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
-        entity.setAmount(dto.getAmount());
+        entity.setAmount(dto.getDrawdownAmount());
+        entity.setDrawdownAmount(dto.getDrawdownAmount());
 
         // 関連するファシリティの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
@@ -45,8 +46,8 @@ public class DrawdownService
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
         entity.setRelatedFacility(facility);
 
-        // 関連するPositionとAmountPieの設定
-        setBaseProperties(entity, dto);
+        // AmountPie生成情報を含むベースプロパティの設定
+        setBasePropertiesWithNewAmountPie(entity, dto, dto.getNewAmountPie());
 
         entity.setDrawdownAmount(dto.getDrawdownAmount());
         entity.setVersion(dto.getVersion());

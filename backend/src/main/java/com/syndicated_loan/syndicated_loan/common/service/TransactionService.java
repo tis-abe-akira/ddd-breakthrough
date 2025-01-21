@@ -55,6 +55,26 @@ public abstract class TransactionService<T extends Transaction, D extends Transa
         }
     }
 
+    /**
+     * AmountPie生成情報を含むベースプロパティの設定
+     */
+    protected void setBasePropertiesWithNewAmountPie(T entity, D dto, AmountPieDto amountPieDto) {
+        // Positionの設定
+        Position position = positionService.findById(dto.getRelatedPositionId())
+                .map(positionService::toEntity)
+                .orElseThrow(() -> new BusinessException("Position not found", "POSITION_NOT_FOUND"));
+        entity.setRelatedPosition(position);
+
+        // AmountPieの生成と設定
+        if (amountPieDto != null) {
+            AmountPie amountPie = amountPieService.toEntity(amountPieDto);
+            entity.setAmountPie(amountPie);
+        }
+
+        // ステータスの初期設定
+        entity.setStatus("PENDING");
+    }
+
     protected void setBaseDtoProperties(D dto, T entity) {
         dto.setPositionType(entity.getRelatedPosition().getType());
         dto.setPositionReference(generatePositionReference(entity.getRelatedPosition()));

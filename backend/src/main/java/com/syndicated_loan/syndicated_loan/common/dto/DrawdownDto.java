@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class DrawdownDto extends TransactionDto {
     private BigDecimal drawdownAmount;
     private Long relatedFacilityId;
+    private AmountPieDto newAmountPie; // AmountPie生成情報を追加
 
     // レスポンス用の追加フィールド
     private FacilityDto relatedFacility;

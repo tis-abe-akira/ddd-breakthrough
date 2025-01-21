@@ -110,7 +110,6 @@ TODO: facilityIdは渡さなくても良さそう（relatedPositionIdから推�
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 1,
     "date": "2025-01-28T10:00:00",
     "processedDate": "2025-01-29T10:00:00",
@@ -120,7 +119,6 @@ curl -X POST http://localhost:8080/api/facility-investments \
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 2,
     "date": "2025-01-29T10:00:00",
     "processedDate": "2025-01-30T10:00:00",
@@ -145,11 +143,12 @@ curl -X POST http://localhost:8080/api/drawdowns \
     "drawdownAmount": 2000000,
     "date": "2025-01-31T14:00:00",
     "processedDate": "2025-01-31T14:00:00",
+    "relatedPositionId": 1,
     "amountPie": {
-      "amounts": [
-        {"investorId": 1, "amount": 400000},
-        {"investorId": 2, "amount": 1600000}
-      ]
+      "amounts": {
+        "1": 400000,
+        "2": 1600000
+      }
     }
   }'
 ```
