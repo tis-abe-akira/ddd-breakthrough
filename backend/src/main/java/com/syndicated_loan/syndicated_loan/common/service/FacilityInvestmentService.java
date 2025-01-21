@@ -22,25 +22,37 @@ public class FacilityInvestmentService
 
     private final InvestorService investorService;
     private final FacilityService facilityService;
+    private final SharePieService sharePieService;
 
     public FacilityInvestmentService(
             FacilityInvestmentRepository repository,
             AmountPieService amountPieService,
             PositionService positionService,
             InvestorService investorService,
-            FacilityService facilityService) {
+            FacilityService facilityService,
+            SharePieService sharePieService) {
         super(repository, amountPieService, positionService);
         this.investorService = investorService;
         this.facilityService = facilityService;
+        this.sharePieService = sharePieService;
     }
 
     @Override
     public FacilityInvestment toEntity(FacilityInvestmentDto dto) {
+
+        System.out.println("***** FacilityInvestmentService.toEntity *****");
         FacilityInvestment entity = new FacilityInvestment();
         entity.setId(dto.getId());
         entity.setType("FACILITY_INVESTMENT");
         entity.setDate(dto.getDate());
-        entity.setAmount(dto.getAmount());
+        entity.setProcessedDate(dto.getProcessedDate());
+        // 金額はシェアパイを通じて算出する
+        BigDecimal calculatedAmount = calculateInvestmentAmount(dto.getRelatedPositionId(), dto.getInvestorId());
+        entity.setAmount(calculatedAmount);
+        entity.setInvestmentAmount(calculatedAmount);
+
+        // entity.setAmount(dto.getAmount());
+        // entity.setInvestmentAmount(dto.getAmount());
 
         // 投資家の設定
         Investor investor = investorService.findById(dto.getInvestorId())
@@ -51,9 +63,28 @@ public class FacilityInvestmentService
         // 関連するPositionとAmountPieの設定
         setBaseProperties(entity, dto);
 
-        entity.setInvestmentAmount(dto.getInvestmentAmount());
+        // entity.setInvestmentAmount(dto.getInvestmentAmount());
         entity.setVersion(dto.getVersion());
         return entity;
+    }
+
+    private BigDecimal calculateInvestmentAmount(Long facilityId, Long investorId) {
+        // Facilityの取得
+        var facility = facilityService.findById(facilityId)
+            .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
+
+        // SharePieが設定されていない場合はエラー
+        if (facility.getSharePieId() == null) {
+            throw new BusinessException("Facility has no SharePie", "SHARE_PIE_NOT_FOUND");
+        }
+
+        // 投資家の比率を取得
+        BigDecimal investorShare = sharePieService.getInvestorShare(facility.getSharePieId(), investorId);
+
+        // 投資金額の計算 (Facilityの総額 × 投資家の比率)
+        return facility.getTotalAmount()
+            .multiply(investorShare)
+            .divide(new BigDecimal("100"), 0, BigDecimal.ROUND_HALF_UP);
     }
 
     @Override
@@ -62,11 +93,12 @@ public class FacilityInvestmentService
                 .id(entity.getId())
                 .type(entity.getType())
                 .date(entity.getDate())
+                .processedDate(entity.getProcessedDate())
                 .amount(entity.getAmount())
                 .relatedPositionId(entity.getRelatedPosition().getId())
                 .amountPieId(entity.getAmountPie() != null ? entity.getAmountPie().getId() : null)
                 .investorId(entity.getInvestor().getId())
-                .investmentAmount(entity.getInvestmentAmount())
+                // .investmentAmount(entity.getInvestmentAmount())
                 .version(entity.getVersion())
                 .build();
 
