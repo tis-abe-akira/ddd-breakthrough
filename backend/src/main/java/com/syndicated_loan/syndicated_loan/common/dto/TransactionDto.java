@@ -16,7 +16,7 @@ public class TransactionDto {
     private LocalDateTime date;
     private BigDecimal amount;
     private Long relatedPositionId;
-    private Long amountPieId;
+    private Long amountPieId; //TODO: share pie で分ける場合には未セットで良い？
     private String status;
     private LocalDateTime processedDate;
     private Long version;

@@ -19,8 +19,8 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public abstract class TransactionService<T extends Transaction, D extends TransactionDto, R extends TransactionRepository<T>> 
-    extends AbstractBaseService<T, Long, D, R> {
+public abstract class TransactionService<T extends Transaction, D extends TransactionDto, R extends TransactionRepository<T>>
+        extends AbstractBaseService<T, Long, D, R> {
 
     private final AmountPieService amountPieService;
     private final PositionService positionService;

@@ -44,6 +44,7 @@ public class FacilityInvestmentController {
 
     @PostMapping
     public ResponseEntity<FacilityInvestmentDto> create(@RequestBody FacilityInvestmentDto dto) {
+        System.out.println("***** FacilityInvestmentController.create *****");
         return ResponseEntity.ok(facilityInvestmentService.create(dto));
     }
 

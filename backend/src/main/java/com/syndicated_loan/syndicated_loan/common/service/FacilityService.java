@@ -92,6 +92,13 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
             entity.setSharePie(sharePie);
         }
 
+        if (dto.getBorrowerId() == null && dto.getId() != null) {
+            // 既存のFacilityからborrowerIdを取得
+            Facility existingFacility = repository.findById(dto.getId())
+                .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
+            dto.setBorrowerId(existingFacility.getBorrower().getId());
+        }
+
         // borrowerの設定
         if (dto.getBorrowerId() == null) {
             throw new BusinessException("Borrower ID cannot be null", "BORROWER_REQUIRED");

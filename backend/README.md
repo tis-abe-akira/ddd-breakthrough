@@ -85,7 +85,7 @@ curl -X POST http://localhost:8080/api/share-pies \
   }'
 ```
 
-### 3. ファシリティの作成
+### 3. ファシリティの作成 (totalAmount: 5,000,000)
 ```bash
 curl -X POST http://localhost:8080/api/facilities \
   -H "Content-Type: application/json" \
@@ -101,8 +101,8 @@ curl -X POST http://localhost:8080/api/facilities \
   }'
 ```
 
-### 4. ファシリティ投資の登録
-TODO: sharePieの登録は2で済んでいると思うので、ここではIDを指定するべきではないか？
+### 4. ファシリティ投資の登録 (investmentAmount: 5,000,000)
+TODO: sharePieの登録は2で済んでいると思うので、ここではIDを指定するべきではないか？ -> relatedPositionIdから推移的にSharePieにアクセス可能！
 
 ```bash
 curl -X POST http://localhost:8080/api/facility-investments \
@@ -110,14 +110,19 @@ curl -X POST http://localhost:8080/api/facility-investments \
   -d '{
     "facilityId": 1,
     "investorId": 1,
-    "investmentAmount": 500000000,
-    "date": "2024-01-20T10:00:00",
-    "sharePie": {
-      "shares": [
-        {"investorId": 1, "percentage": 50},
-        {"investorId": 2, "percentage": 50}
-      ]
-    }
+    "date": "2024-01-28T10:00:00",
+    "processedDate": "2024-01-29T10:00:00",
+    "relatedPositionId": 1
+  }'
+
+curl -X POST http://localhost:8080/api/facility-investments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facilityId": 1,
+    "investorId": 2,
+    "date": "2024-01-29T10:00:00",
+    "processedDate": "2024-01-30T10:00:00",
+    "relatedPositionId": 1
   }'
 ```
 
