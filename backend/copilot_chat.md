@@ -289,4 +289,30 @@ amountのセット漏れがあったので、以下のように修正した。
         entity.setDrawdownAmount(dto.getDrawdownAmount()); // 修正
 ```
 
+## その他の修正その２
 
+検証したら、AmountPieができていなかった。初歩的なミス（ユーザーのミス）だが、curlでセットするキーが間違っていた。
+
+```bash
+curl -X POST http://localhost:8080/api/drawdowns \
+  -H "Content-Type: application/json" \
+  -d '{
+    "relatedFacilityId": 1,
+    "drawdownAmount": 2000000,
+    "date": "2025-01-31T14:00:00",
+    "processedDate": "2025-01-31T14:00:00",
+    "relatedPositionId": 1,
+-    "amountPie": {
++    "newAmountPie": {
+      "amounts": {
+        "1": 400000,
+        "2": 1600000
+      }
+    }
+  }'
+```
+
+なお、これに起因してSaveしていないエンティティの参照などお決まりのJPA関連のエラーを踏んでしまい、修正した。
+この際に、GitHub Copilot Chatで適切なサジェスチョンが得られず、最終的には手作業での修正をした。
+
+詳しくはコミット履歴などを参照。

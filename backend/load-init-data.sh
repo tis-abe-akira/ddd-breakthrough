@@ -101,7 +101,7 @@ curl -X POST http://localhost:8080/api/drawdowns \
     "date": "2025-01-31T14:00:00",
     "processedDate": "2025-01-31T14:00:00",
     "relatedPositionId": 1,
-    "amountPie": {
+    "newAmountPie": {
       "amounts": {
         "1": 400000,
         "2": 1600000

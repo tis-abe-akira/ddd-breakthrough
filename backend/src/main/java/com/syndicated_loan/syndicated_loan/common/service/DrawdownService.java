@@ -37,6 +37,7 @@ public class DrawdownService
         entity.setId(dto.getId());
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
+        entity.setProcessedDate(dto.getProcessedDate());
         entity.setAmount(dto.getDrawdownAmount());
         entity.setDrawdownAmount(dto.getDrawdownAmount());
 
@@ -60,6 +61,7 @@ public class DrawdownService
                 .id(entity.getId())
                 .type(entity.getType())
                 .date(entity.getDate())
+                .processedDate(entity.getProcessedDate())
                 .amount(entity.getAmount())
                 .relatedPositionId(entity.getRelatedPosition().getId())
                 .amountPieId(entity.getAmountPie() != null ? entity.getAmountPie().getId() : null)

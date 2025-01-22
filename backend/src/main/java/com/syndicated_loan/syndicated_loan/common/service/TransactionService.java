@@ -64,13 +64,14 @@ public abstract class TransactionService<T extends Transaction, D extends Transa
                 .map(positionService::toEntity)
                 .orElseThrow(() -> new BusinessException("Position not found", "POSITION_NOT_FOUND"));
         entity.setRelatedPosition(position);
-
-        // AmountPieの生成と設定
+    
+        // AmountPieの生成と永続化
         if (amountPieDto != null) {
-            AmountPie amountPie = amountPieService.toEntity(amountPieDto);
+            AmountPieDto savedDto = amountPieService.create(amountPieDto);  // 永続化を行う
+            AmountPie amountPie = amountPieService.toEntity(savedDto);
             entity.setAmountPie(amountPie);
         }
-
+    
         // ステータスの初期設定
         entity.setStatus("PENDING");
     }
