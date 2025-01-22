@@ -90,4 +90,20 @@ curl -X POST http://localhost:8080/api/facility-investments \
     "relatedPositionId": 1
   }'
 
-
+echo "\n"
+echo "drawdownsの初期化"
+curl -X POST http://localhost:8080/api/drawdowns \
+  -H "Content-Type: application/json" \
+  -d '{
+    "relatedFacilityId": 1,
+    "drawdownAmount": 2000000,
+    "date": "2025-01-31T14:00:00",
+    "processedDate": "2025-01-31T14:00:00",
+    "relatedPositionId": 1,
+    "amountPie": {
+      "amounts": {
+        "1": 400000,
+        "2": 1600000
+      }
+    }
+  }'
