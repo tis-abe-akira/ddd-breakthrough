@@ -2,47 +2,47 @@
 
 ## 概要
 
-Eric Evans DDD のBreakthroughの章のシンジケートローンの実装を進めている。
-FacilityInvestmentの実装が完了したので、次はDrawdownの実装を進める。
+Eric Evans DDD のBreakthroughの章のシンジケートローンの実装を進めている。  
+FacilityInvestmentの実装が完了したので、次はDrawdownの実装を進める。  
 AIエージェント(Cline)で作った土台を元に、Drawdownの実装を進める。（土台のコードは考慮漏れがあるので、それを解析して修正する）
 
 ### 環境
 
-使った機能 : GitHub Copilot Chat
-LLMは : Claude 3.5 Sonnetを利用
+- 使った機能 : GitHub Copilot Chat
+- LLM : Claude 3.5 Sonnetを利用
 
 ## 開始時点の実装の確認のやり取り（GitHub Copilot Chatで #cocebaseを利用）
 
 ### User
-tis-abe-akira
+tis-abe-akira  
 #codebase DrawdownController.javaの@PostMappingのエンドポイント（メソッド名:create）を実行した時、最終的にどのような流れで処理が実行されますか？コラボレートするクラス名#メソッド名を用いて具体的に説明してください！
 
 ### Used references
 
 Used 27 references
-README.md
-DrawdownDto.java
-Drawdown.java
-DrawdownRepository.java
-AbstractBaseService.java
-BaseService.java
-DrawdownService.java
-FeePaymentService.java
-InterestPaymentService.java
-PrincipalPaymentService.java
-BorrowerController.java
-InvestorController.java
-SyndicateController.java
-FacilityController.java
-SharePieController.java
-DrawdownController.java
-FacilityInvestmentController.java
-FacilityTradeController.java
-FeePaymentController.java
-InterestPaymentController.java
-PrincipalPaymentController.java
-spec.md
-technical-backend.md
+- README.md
+- DrawdownDto.java
+- Drawdown.java
+- DrawdownRepository.java
+- AbstractBaseService.java
+- BaseService.java
+- DrawdownService.java
+- FeePaymentService.java
+- InterestPaymentService.java
+- PrincipalPaymentService.java
+- BorrowerController.java
+- InvestorController.java
+- SyndicateController.java
+- FacilityController.java
+- SharePieController.java
+- DrawdownController.java
+- FacilityInvestmentController.java
+- FacilityTradeController.java
+- FeePaymentController.java
+- InterestPaymentController.java
+- PrincipalPaymentController.java
+- spec.md
+- technical-backend.md
 
 ### Answer
 
@@ -106,7 +106,7 @@ technical-backend.md
 
 処理の流れの説明という観点では、大筋合っている。
 
-ただし、この文脈では、DrawdownService#toEntityから基底クラスTransactionService#setBasePropertiesを呼び出しテイルという情報が重要だが、これが抜けている。
+ただし、この文脈では、DrawdownService#toEntityから基底クラスTransactionService#setBasePropertiesを呼び出しているという情報が重要だが、これが抜けている。
 
 
 ## 修正のやり取り（GitHub Copilot Chat）
@@ -114,17 +114,17 @@ technical-backend.md
 処理の流れがわかったので修正を進める。
 
 ### User
-調査の結果、現状は仕様の考慮漏れがあることがわかりました。 
-TransactionService#setBasePropertiesでは、 AmoutPieを設定する際に、すでに関連するAmountPieがあるものとして、処理（Entity永続化に関連を保持）しています。 
+調査の結果、現状は仕様の考慮漏れがあることがわかりました。  
+TransactionService#setBasePropertiesでは、 AmoutPieを設定する際に、すでに関連するAmountPieがあるものとして、処理（Entity永続化に関連を保持）しています。  
 しかし、Drawdownの時には、入力のパラメータとしてAmountPieの生成情報を受け取り処理するように変更が必要です。 
 ソースコードの修正を提案してください。
 
 ### Used references
 
-FeePaymentService.java
-InterestPaymentService.java
-TransactionService.java
-technical-backend.md
+- FeePaymentService.java
+- InterestPaymentService.java
+- TransactionService.java
+- technical-backend.md
 
 ### Answer
 
@@ -275,7 +275,7 @@ curl -X POST http://localhost:8080/api/drawdowns \
 ```
 
 amountのセット漏れがあったので、以下のように修正した。
-そもそも、基底クラスと拡張クラスの両方に金額を持っているので、基底クラスに寄せる修正をしたい。これは、別途対応する。
+（そもそも、基底クラスと拡張クラスの両方に金額を持っているので、基底クラスに寄せる修正をしたい。これは、別途対応する。）
 
 ```java
 
