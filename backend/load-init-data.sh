@@ -75,7 +75,6 @@ echo "facilityInvestmentsの初期化"
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 1,
     "date": "2024-01-28T10:00:00",
     "processedDate": "2024-01-29T10:00:00",
@@ -85,7 +84,6 @@ curl -X POST http://localhost:8080/api/facility-investments \
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 2,
     "date": "2024-01-29T10:00:00",
     "processedDate": "2024-01-30T10:00:00",
