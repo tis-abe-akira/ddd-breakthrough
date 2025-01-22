@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.DrawdownDto;
+import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
 import com.syndicated_loan.syndicated_loan.common.entity.Drawdown;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
+import com.syndicated_loan.syndicated_loan.common.entity.Position;
+import com.syndicated_loan.syndicated_loan.common.entity.AmountPie;
 import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 
@@ -17,8 +20,8 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class DrawdownService 
-    extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
+public class DrawdownService
+        extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
 
     private final FacilityService facilityService;
 
@@ -37,7 +40,11 @@ public class DrawdownService
         entity.setId(dto.getId());
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
-        entity.setAmount(dto.getAmount());
+        entity.setProcessedDate(dto.getProcessedDate());
+
+        // drawdownAmountをamountとして設定
+        entity.setDrawdownAmount(dto.getDrawdownAmount());
+        entity.setAmount(dto.getDrawdownAmount()); // amountはdrawdownAmountと同じ値を設定
 
         // 関連するファシリティの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
@@ -45,12 +52,41 @@ public class DrawdownService
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
         entity.setRelatedFacility(facility);
 
-        // 関連するPositionとAmountPieの設定
-        setBaseProperties(entity, dto);
+        // 関連するPositionの設定
+        Position relatedPosition = positionService.findById(dto.getRelatedPositionId())
+                .map(positionService::toEntity)
+                .orElseThrow(() -> new BusinessException("Position not found", "POSITION_NOT_FOUND"));
+        entity.setRelatedPosition(relatedPosition);
 
-        entity.setDrawdownAmount(dto.getDrawdownAmount());
+        // AmountPieの設定（この時点では保存しない）
+        if (dto.getAmountPie() != null) {
+            AmountPie amountPie = amountPieService.toEntity(dto.getAmountPie());
+            entity.setAmountPie(amountPie);
+        }
+
         entity.setVersion(dto.getVersion());
         return entity;
+    }
+
+    @Override
+    @Transactional
+    public DrawdownDto create(DrawdownDto dto) {
+        // AmountPieを先に保存
+        AmountPie amountPie = null;
+        if (dto.getAmountPie() != null) {
+            AmountPieDto savedAmountPieDto = amountPieService.create(dto.getAmountPie());
+            amountPie = amountPieService.toEntity(savedAmountPieDto);
+        }
+
+        // Drawdownエンティティの生成
+        Drawdown entity = toEntity(dto);
+        if (amountPie != null) {
+            entity.setAmountPie(amountPie);
+        }
+
+        // Drawdownの保存
+        Drawdown savedEntity = repository.save(entity);
+        return toDto(savedEntity);
     }
 
     @Override
@@ -59,6 +95,7 @@ public class DrawdownService
                 .id(entity.getId())
                 .type(entity.getType())
                 .date(entity.getDate())
+                .processedDate(entity.getProcessedDate())
                 .amount(entity.getAmount())
                 .relatedPositionId(entity.getRelatedPosition().getId())
                 .amountPieId(entity.getAmountPie() != null ? entity.getAmountPie().getId() : null)
@@ -76,7 +113,8 @@ public class DrawdownService
         dto.setRemainingFacilityAmount(facility.getAvailableAmount());
         if (facility.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal utilizationRate = BigDecimal.ONE
-                    .subtract(facility.getAvailableAmount().divide(facility.getTotalAmount(), 4, BigDecimal.ROUND_HALF_UP))
+                    .subtract(facility.getAvailableAmount().divide(facility.getTotalAmount(), 4,
+                            BigDecimal.ROUND_HALF_UP))
                     .multiply(new BigDecimal("100"));
             dto.setUtilizationRate(utilizationRate);
         }

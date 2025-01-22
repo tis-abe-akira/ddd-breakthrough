@@ -108,7 +108,6 @@ TODO: sharePieの登録は2で済んでいると思うので、ここではIDを
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 1,
     "date": "2024-01-28T10:00:00",
     "processedDate": "2024-01-29T10:00:00",
@@ -118,7 +117,6 @@ curl -X POST http://localhost:8080/api/facility-investments \
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 2,
     "date": "2024-01-29T10:00:00",
     "processedDate": "2024-01-30T10:00:00",
@@ -128,17 +126,21 @@ curl -X POST http://localhost:8080/api/facility-investments \
 
 ### 5. ドローダウンの実行
 ```bash
+echo "\n"
+echo "drawdownsの初期化"
 curl -X POST http://localhost:8080/api/drawdowns \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
-    "drawdownAmount": 100000000,
-    "date": "2024-01-20T14:00:00",
+    "relatedFacilityId": 1,
+    "drawdownAmount": 2000000,
+    "date": "2025-01-31T14:00:00",
+    "processedDate": "2025-01-31T14:00:00",
+    "relatedPositionId": 1,
     "amountPie": {
-      "amounts": [
-        {"investorId": 1, "amount": 50000000},
-        {"investorId": 2, "amount": 50000000}
-      ]
+      "amounts": {
+        "1": 400000,
+        "2": 1600000
+      }
     }
   }'
 ```
