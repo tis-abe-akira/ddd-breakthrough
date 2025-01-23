@@ -22,8 +22,9 @@ import java.util.List;
 public abstract class TransactionService<T extends Transaction, D extends TransactionDto, R extends TransactionRepository<T>>
         extends AbstractBaseService<T, Long, D, R> {
 
-    private final AmountPieService amountPieService;
-    private final PositionService positionService;
+    // privateからprotectedに変更
+    protected final AmountPieService amountPieService;
+    protected final PositionService positionService;
 
     protected TransactionService(
             R repository,
