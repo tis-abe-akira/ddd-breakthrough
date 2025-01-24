@@ -38,7 +38,7 @@ public class FeePaymentService
         entity.setId(dto.getId());
         entity.setType("FEE_PAYMENT");
         entity.setDate(dto.getDate());
-        entity.setAmount(dto.getAmount());
+        entity.setAmount(dto.getPaymentAmount());  // ここ追加！
 
         // 関連するファシリティの設定
         Facility facility = facilityService.findById(dto.getFacilityId())

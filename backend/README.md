@@ -101,44 +101,44 @@ curl -X POST http://localhost:8080/api/facilities \
   }'
 ```
 
-### 4. ファシリティ投資の登録 (investmentAmount: 5,000,000)
+### 4. ファシリティ投資の登録と実行 (investmentAmount: 5,000,000)
 TODO: sharePieの登録は2で済んでいると思うので、ここではIDを指定するべきではないか？ -> relatedPositionIdから推移的にSharePieにアクセス可能！
 
 ```bash
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 1,
-    "date": "2024-01-28T10:00:00",
-    "processedDate": "2024-01-29T10:00:00",
+    "date": "2025-01-28T10:00:00",
+    "processedDate": "2025-01-29T10:00:00",
     "relatedPositionId": 1
   }'
 
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
     "investorId": 2,
-    "date": "2024-01-29T10:00:00",
-    "processedDate": "2024-01-30T10:00:00",
+    "date": "2025-01-29T10:00:00",
+    "processedDate": "2025-01-30T10:00:00",
     "relatedPositionId": 1
   }'
 ```
 
-### 5. ドローダウンの実行
+### 5. ドローダウンの登録と実行
 ```bash
 curl -X POST http://localhost:8080/api/drawdowns \
   -H "Content-Type: application/json" \
   -d '{
-    "facilityId": 1,
-    "drawdownAmount": 100000000,
-    "date": "2024-01-20T14:00:00",
+    "relatedFacilityId": 1,
+    "drawdownAmount": 2000000,
+    "date": "2025-01-31T14:00:00",
+    "processedDate": "2025-01-31T14:00:00",
+    "relatedPositionId": 1,
     "amountPie": {
-      "amounts": [
-        {"investorId": 1, "amount": 50000000},
-        {"investorId": 2, "amount": 50000000}
-      ]
+      "amounts": {
+        "1": 400000,
+        "2": 1600000
+      }
     }
   }'
 ```
@@ -151,18 +151,13 @@ curl -X POST http://localhost:8080/api/fee-payments \
   -d '{
     "facilityId": 1,
     "feeType": "COMMITMENT_FEE",
-    "paymentAmount": 1000000,
-    "date": "2024-01-20T15:00:00",
-    "amountPie": {
-      "amounts": [
-        {"investorId": 1, "amount": 500000},
-        {"investorId": 2, "amount": 500000}
-      ]
-    }
+    "paymentAmount": 20000,
+    "date": "2025-01-31:00:00",
+    "relatedPositionId": 1
   }'
 
 # 手数料支払いの実行
-curl -X PUT http://localhost:8080/api/fee-payments/1/execute
+curl -X PUT http://localhost:8080/api/fee-payments/4/execute
 ```
 
 ### 7. 利息支払いの登録と実行

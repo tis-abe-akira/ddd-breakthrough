@@ -71,13 +71,12 @@ curl -X POST http://localhost:8080/api/facilities \
   }'
 
 echo "\n"
-echo "facilityInvestmentsの初期化"
+echo "facilityInvestmentsの登録"
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
     "investorId": 1,
-    "date": "2024-01-28T10:00:00",
-    "processedDate": "2024-01-29T10:00:00",
+    "date": "2025-01-28T10:00:00",
     "relatedPositionId": 1
   }'
 
@@ -85,8 +84,7 @@ curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
     "investorId": 2,
-    "date": "2024-01-29T10:00:00",
-    "processedDate": "2024-01-30T10:00:00",
+    "date": "2025-01-29T10:00:00",
     "relatedPositionId": 1
   }'
 
@@ -107,3 +105,23 @@ curl -X POST http://localhost:8080/api/drawdowns \
       }
     }
   }'
+
+# 手数料支払いの登録
+echo "\n"
+echo "fee-paymentsの登録"
+curl -X POST http://localhost:8080/api/fee-payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facilityId": 1,
+    "feeType": "COMMITMENT_FEE",
+    "paymentAmount": 20000,
+    "date": "2025-01-31:00:00",
+    "relatedPositionId": 1
+  }'
+
+# 手数料支払いの実行
+echo "\n"
+echo "fee-paymentsの実行"
+curl -X PUT http://localhost:8080/api/fee-payments/4/execute
+
+
