@@ -21,13 +21,3 @@ public class FacilityInvestmentDto extends TransactionDto {
     private String investmentStatus; // 投資のステータス（COMMITTED, FUNDED など）
 }
 
-/*
- 
- date 2025-01-27T00:00:00
- amount 999
- positionId
- amountPieId
- status
- processedDate
-
- */
