@@ -2,6 +2,7 @@
 
 # データの初期化
 
+# Borrowerの登録
 echo "borrowersの初期化"
 curl -X POST http://localhost:8080/api/borrowers \
   -H "Content-Type: application/json" \
@@ -14,6 +15,7 @@ curl -X POST http://localhost:8080/api/borrowers \
     "industry": "Technology"
   }'
 
+# Investorの登録
 echo "\n"
 echo "borrowersの初期化"
 curl -X POST http://localhost:8080/api/investors \
@@ -34,6 +36,7 @@ curl -X POST http://localhost:8080/api/investors \
     "currentInvestments": 0
   }'
 
+# Syndicateの登録
 echo "\n"
 echo "syndicatesの初期化"
 curl -X POST http://localhost:8080/api/syndicates \
@@ -44,6 +47,7 @@ curl -X POST http://localhost:8080/api/syndicates \
     "totalCommitment": 5000000
   }'
 
+# SharePieの登録
 echo "\n"
 echo "share-piesの初期化"
 curl -X POST http://localhost:8080/api/share-pies \
@@ -55,8 +59,9 @@ curl -X POST http://localhost:8080/api/share-pies \
     }
   }'
 
+# Facilityの登録
 echo "\n"
-echo "facilitiesの初期化"
+echo "facilitiesの登録"
 curl -X POST http://localhost:8080/api/facilities \
   -H "Content-Type: application/json" \
   -d '{
@@ -70,6 +75,7 @@ curl -X POST http://localhost:8080/api/facilities \
     "borrowerId": 1
   }'
 
+# FacilityInvestmentsの登録
 echo "\n"
 echo "facilityInvestmentsの登録"
 curl -X POST http://localhost:8080/api/facility-investments \
@@ -88,8 +94,9 @@ curl -X POST http://localhost:8080/api/facility-investments \
     "relatedPositionId": 1
   }'
 
+# ドローダウンの登録
 echo "\n"
-echo "drawdownsの初期化"
+echo "drawdownsの登録"
 curl -X POST http://localhost:8080/api/drawdowns \
   -H "Content-Type: application/json" \
   -d '{
@@ -105,6 +112,11 @@ curl -X POST http://localhost:8080/api/drawdowns \
       }
     }
   }'
+
+# ドローダウンの実行
+echo "\n"
+echo "drawdownsの実行"
+curl -X PUT http://localhost:8080/api/drawdowns/3/execute
 
 # 手数料支払いの登録
 echo "\n"
