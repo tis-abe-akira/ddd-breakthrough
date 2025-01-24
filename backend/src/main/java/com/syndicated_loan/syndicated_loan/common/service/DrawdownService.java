@@ -38,7 +38,7 @@ public class DrawdownService
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
         entity.setProcessedDate(dto.getProcessedDate());
-        entity.setAmount(dto.getAmount());
+        entity.setAmount(dto.getDrawdownAmount());
 
         // 関連するファシリティの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
@@ -157,5 +157,18 @@ public class DrawdownService
         drawdown.setAmount(newAmount); // 取引金額も更新
 
         return toDto(repository.save(drawdown));
+    }
+
+    @Override
+    @Transactional
+    public DrawdownDto create(DrawdownDto dto) {
+        // AmountPieの生成
+        if (dto.getAmountPie() != null) {
+            var amountPie = amountPieService.create(dto.getAmountPie());
+            dto.setAmountPieId(amountPie.getId());
+        }
+
+        // 基底クラスのcreateを呼び出し
+        return super.create(dto);
     }
 }
