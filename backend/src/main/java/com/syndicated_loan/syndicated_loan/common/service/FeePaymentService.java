@@ -4,8 +4,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.FeePaymentDto;
+import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
 import com.syndicated_loan.syndicated_loan.common.entity.FeePayment;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
+import com.syndicated_loan.syndicated_loan.common.entity.SharePie;
 import com.syndicated_loan.syndicated_loan.common.repository.FeePaymentRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 
@@ -14,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Slf4j
 @Service
@@ -22,14 +26,17 @@ public class FeePaymentService
     extends TransactionService<FeePayment, FeePaymentDto, FeePaymentRepository> {
 
     private final FacilityService facilityService;
+    private final SharePieService sharePieService;  // 追加！
 
     public FeePaymentService(
             FeePaymentRepository repository,
             AmountPieService amountPieService,
             PositionService positionService,
-            FacilityService facilityService) {
+            FacilityService facilityService,
+            SharePieService sharePieService) {  // 追加！
         super(repository, amountPieService, positionService);
         this.facilityService = facilityService;
+        this.sharePieService = sharePieService;  // 追加！
     }
 
     @Override
@@ -127,11 +134,44 @@ public class FeePaymentService
             throw new BusinessException("Fee payment already executed", "FEE_PAYMENT_ALREADY_EXECUTED");
         }
 
+        // Facilityからシェアパイを取得
+        Facility facility = feePayment.getFacility();
+        SharePie sharePie = facility.getSharePie();
+        if (sharePie == null) {
+            throw new BusinessException("Facility has no SharePie", "SHARE_PIE_NOT_FOUND");
+        }
+
+        // 新しい AmountPie の作成
+        AmountPieDto amountPieDto = createAmountPieFromSharePie(
+            sharePie,
+            feePayment.getPaymentAmount()
+        );
+        
+        // AmountPie を保存して FeePayment に設定
+        AmountPieDto savedAmountPie = amountPieService.create(amountPieDto);
+        feePayment.setAmountPie(amountPieService.toEntity(savedAmountPie));
+
         // ステータスを更新
         feePayment.setStatus("EXECUTED");
         feePayment.setProcessedDate(java.time.LocalDateTime.now());
 
         return toDto(repository.save(feePayment));
+    }
+
+    // SharePie から AmountPie を生成するヘルパーメソッド
+    private AmountPieDto createAmountPieFromSharePie(SharePie sharePie, BigDecimal totalAmount) {
+        Map<Long, BigDecimal> amounts = new HashMap<>();
+        
+        sharePie.getShares().forEach((investorId, sharePercentage) -> {
+            BigDecimal amount = totalAmount
+                .multiply(sharePercentage)
+                .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+            amounts.put(investorId, amount);
+        });
+
+        return AmountPieDto.builder()
+                .amounts(amounts)
+                .build();
     }
 
     // 手数料金額の更新（実行前のみ可能）
