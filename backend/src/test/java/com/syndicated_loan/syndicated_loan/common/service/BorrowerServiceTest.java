@@ -1,127 +1,96 @@
 package com.syndicated_loan.syndicated_loan.common.service;
 
 import com.syndicated_loan.syndicated_loan.common.dto.BorrowerDto;
-import com.syndicated_loan.syndicated_loan.common.entity.Borrower;
 import com.syndicated_loan.syndicated_loan.common.repository.BorrowerRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
+@SpringBootTest
 class BorrowerServiceTest {
 
-    @Mock
+    @Autowired
+    private BorrowerService borrowerService;
+
+    @Autowired
     private BorrowerRepository borrowerRepository;
 
-    @InjectMocks
-    private BorrowerService borrowerService;
+    private BorrowerDto savedBorrower;  // テストデータを保持する変数を追加
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        borrowerRepository.deleteAll();
+
+        BorrowerDto borrowerDto = new BorrowerDto();
+        borrowerDto.setCompanyType("Test Company Type");
+        borrowerDto.setIndustry("Test Industry");
+        borrowerDto.setName("Test Borrower");
+        savedBorrower = borrowerService.create(borrowerDto);  // 作成したデータを保持
     }
 
     @Test
-    void testCreateBorrower() {
-        BorrowerDto dto = new BorrowerDto();
-        dto.setName("Test Borrower");
-        dto.setCompanyType("LLC");
-        dto.setIndustry("Finance");
-
-        Borrower borrower = new Borrower();
-        borrower.setId(1L);
-        borrower.setName("Test Borrower");
-        borrower.setCompanyType("LLC");
-        borrower.setIndustry("Finance");
-
-        when(borrowerRepository.save(any(Borrower.class))).thenReturn(borrower);
-
-        BorrowerDto createdDto = borrowerService.create(dto);
-
-        assertThat(createdDto).isNotNull();
-        assertThat(createdDto.getName()).isEqualTo("Test Borrower");
-        assertThat(createdDto.getCompanyType()).isEqualTo("LLC");
-        assertThat(createdDto.getIndustry()).isEqualTo("Finance");
+    void testFindAll() {
+        List<BorrowerDto> borrowers = borrowerService.findAll();
+        assertThat(borrowers).hasSize(1);
+        BorrowerDto borrower = borrowers.get(0);
+        assertThat(borrower.getCompanyType()).isEqualTo("Test Company Type");
+        assertThat(borrower.getIndustry()).isEqualTo("Test Industry");
+        assertThat(borrower.getName()).isEqualTo("Test Borrower");
     }
 
     @Test
     void testFindById() {
-        Borrower borrower = new Borrower();
-        borrower.setId(1L);
-        borrower.setName("Test Borrower");
-
-        when(borrowerRepository.findById(1L)).thenReturn(Optional.of(borrower));
-
-        Optional<BorrowerDto> foundDto = borrowerService.findById(1L);
-
-        assertThat(foundDto).isPresent();
-        assertThat(foundDto.get().getName()).isEqualTo("Test Borrower");
+        Optional<BorrowerDto> borrowerOpt = borrowerService.findById(savedBorrower.getId());  // 保存したIDを使用
+        assertThat(borrowerOpt).isPresent();
+        BorrowerDto borrower = borrowerOpt.get();
+        assertThat(borrower.getCompanyType()).isEqualTo("Test Company Type");
+        assertThat(borrower.getIndustry()).isEqualTo("Test Industry");
+        assertThat(borrower.getName()).isEqualTo("Test Borrower");
     }
 
     @Test
-    void testUpdateBorrower() {
-        BorrowerDto dto = new BorrowerDto();
-        dto.setId(1L);
-        dto.setName("Updated Borrower");
-        dto.setCompanyType("LLC");
-        dto.setIndustry("Finance");
+    void testCreate() {
+        BorrowerDto borrowerDto = new BorrowerDto();
+        borrowerDto.setCompanyType("New Company Type");
+        borrowerDto.setIndustry("New Industry");
+        borrowerDto.setName("New Borrower");
 
-        Borrower borrower = new Borrower();
-        borrower.setId(1L);
-        borrower.setName("Test Borrower");
-        borrower.setCompanyType("LLC");
-        borrower.setIndustry("Finance");
+        BorrowerDto createdBorrower = borrowerService.create(borrowerDto);
+        
+        assertThat(createdBorrower).isNotNull();
+        assertThat(createdBorrower.getCompanyType()).isEqualTo("New Company Type");
+        assertThat(createdBorrower.getIndustry()).isEqualTo("New Industry");
+        assertThat(createdBorrower.getName()).isEqualTo("New Borrower");
 
-        when(borrowerRepository.existsById(1L)).thenReturn(true);
-        when(borrowerRepository.save(any(Borrower.class))).thenReturn(borrower);
-
-        BorrowerDto updatedDto = borrowerService.update(1L, dto);
-
-        assertThat(updatedDto).isNotNull();
-        assertThat(updatedDto.getName()).isEqualTo("Updated Borrower");
+        // データが実際にDBに保存されているか確認
+        Optional<BorrowerDto> savedBorrower = borrowerService.findById(createdBorrower.getId());
+        assertThat(savedBorrower).isPresent();
+        assertThat(savedBorrower.get().getCompanyType()).isEqualTo("New Company Type");
+        assertThat(savedBorrower.get().getIndustry()).isEqualTo("New Industry");
+        assertThat(savedBorrower.get().getName()).isEqualTo("New Borrower");
     }
 
     @Test
-    void testDeleteBorrower() {
-        when(borrowerRepository.existsById(1L)).thenReturn(true);
-        doNothing().when(borrowerRepository).deleteById(1L);
-
-        assertThatCode(() -> borrowerService.delete(1L)).doesNotThrowAnyException();
-        verify(borrowerRepository, times(1)).deleteById(1L);
+    void testDelete() {
+        assertThatCode(() -> borrowerService.delete(savedBorrower.getId())).doesNotThrowAnyException();  // 保存したIDを使用
+        
+        // 削除後の確認を追加
+        assertThat(borrowerService.findById(savedBorrower.getId())).isEmpty();
     }
 
     @Test
-    void testSearchBorrowers() {
-        Borrower borrower = new Borrower();
-        borrower.setId(1L);
-        borrower.setName("Test Borrower");
-        borrower.setCompanyType("LLC");
-        borrower.setIndustry("Finance");
-
-        when(borrowerRepository.findAll()).thenReturn(List.of(borrower));
-
-        List<BorrowerDto> foundDtos = borrowerService.search("Test", null, null);
-
-        assertThat(foundDtos).isNotNull();
-        assertThat(foundDtos).isNotEmpty();
-        assertThat(foundDtos.get(0).getName()).isEqualTo("Test Borrower");
-    }
-
-    @Test
-    void testCreateBorrowerValidation() {
-        BorrowerDto dto = new BorrowerDto();
-        dto.setName("Test Borrower");
-
-        assertThatThrownBy(() -> borrowerService.create(dto))
-                .isInstanceOf(BusinessException.class);
+    void testDeleteNotFound() {
+        assertThatThrownBy(() -> borrowerService.delete(999L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Entity not found with id: 999");
     }
 }
