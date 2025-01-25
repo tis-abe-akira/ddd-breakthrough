@@ -135,5 +135,3 @@ curl -X POST http://localhost:8080/api/fee-payments \
 echo "\n"
 echo "fee-paymentsの実行"
 curl -X PUT http://localhost:8080/api/fee-payments/4/execute
-
-
