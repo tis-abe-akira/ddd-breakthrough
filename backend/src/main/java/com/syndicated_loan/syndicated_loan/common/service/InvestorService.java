@@ -9,6 +9,7 @@ import com.syndicated_loan.syndicated_loan.common.repository.InvestorRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +55,40 @@ public class InvestorService extends AbstractBaseService<Investor, Long, Investo
                 .filter(investor -> type == null || investor.getType().equals(type))
                 .filter(investor -> minCapacity == null ||
                         investor.getInvestmentCapacity().compareTo(minCapacity) >= 0)
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<InvestorDto> findByName(String name) {
+        return repository.findByName(name).map(this::toDto);
+    }
+
+    public List<InvestorDto> findByNameContaining(String namePattern) {
+        return repository.findByNameContaining(namePattern).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvestorDto> findByType(String type) {
+        return repository.findByType(type).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvestorDto> findByInvestmentCapacityGreaterThan(BigDecimal amount) {
+        return repository.findByInvestmentCapacityGreaterThan(amount).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvestorDto> findByCurrentInvestmentsLessThan(BigDecimal amount) {
+        return repository.findByCurrentInvestmentsLessThan(amount).stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<InvestorDto> findByTypeAndInvestmentCapacityGreaterThan(String type, BigDecimal amount) {
+        return repository.findByTypeAndInvestmentCapacityGreaterThan(type, amount).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
