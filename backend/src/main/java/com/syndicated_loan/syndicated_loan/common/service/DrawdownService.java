@@ -37,7 +37,6 @@ public class DrawdownService
         entity.setId(dto.getId());
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
-        entity.setProcessedDate(dto.getProcessedDate());
         entity.setAmount(dto.getDrawdownAmount());
 
         // 関連するファシリティの設定

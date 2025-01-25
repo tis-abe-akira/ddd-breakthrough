@@ -3,12 +3,14 @@ package com.syndicated_loan.syndicated_loan.common.dto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
 @SuperBuilder
+@EqualsAndHashCode(callSuper = true)  // これ重要！
 public class FeePaymentDto extends TransactionDto {
     private String feeType;
     private BigDecimal paymentAmount;
