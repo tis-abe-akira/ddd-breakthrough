@@ -144,4 +144,11 @@ public class SharePieServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessage("Entity not found with id: 999");
     }
+
+    //TODO: 他のテストケースを追加する
+    // sharePieService.updateShares() のテストケースを追加する
+    // getInvestorShare
+    // findByMinimumShare
+    // findByInvestorId
+
 }
