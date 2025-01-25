@@ -3,12 +3,9 @@ package com.syndicated_loan.syndicated_loan.common.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
 import com.syndicated_loan.syndicated_loan.common.dto.DrawdownDto;
-import com.syndicated_loan.syndicated_loan.common.entity.AmountPie;
 import com.syndicated_loan.syndicated_loan.common.entity.Drawdown;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
-import com.syndicated_loan.syndicated_loan.common.entity.Position;
 import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 
@@ -24,8 +21,6 @@ public class DrawdownService
     extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
 
     private final FacilityService facilityService;
-    private final AmountPieService amountPieService;
-    private final PositionService positionService;
 
     public DrawdownService(
             DrawdownRepository repository,
@@ -34,8 +29,6 @@ public class DrawdownService
             FacilityService facilityService) {
         super(repository, amountPieService, positionService);
         this.facilityService = facilityService;
-        this.amountPieService = amountPieService;
-        this.positionService = positionService;
     }
 
     @Override
@@ -52,20 +45,8 @@ public class DrawdownService
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
         entity.setRelatedFacility(facility);
 
-        // 関連するPositionの設定（AmountPieは除外）
-        Position relatedPosition = positionService.findById(dto.getRelatedPositionId())
-                .map(positionService::toEntity)
-                .orElseThrow(() -> new BusinessException("Position not found", "POSITION_NOT_FOUND"));
-        entity.setRelatedPosition(relatedPosition);
-
-        // AmountPieの生成、保存、設定
-        if (dto.getAmountPie() != null) {
-            AmountPie amountPie = amountPieService.toEntity(dto.getAmountPie());
-            // AmountPieを先に保存
-            AmountPieDto savedAmountPieDto = amountPieService.create(amountPieService.toDto(amountPie));
-            amountPie = amountPieService.toEntity(savedAmountPieDto);
-            entity.setAmountPie(amountPie);
-        }
+        // 関連するPositionとAmountPieの設定
+        setBaseProperties(entity, dto);
 
         entity.setDrawdownAmount(dto.getDrawdownAmount());
         entity.setVersion(dto.getVersion());
