@@ -2,6 +2,7 @@
 
 # データの初期化
 
+# Borrowerの登録
 echo "borrowersの初期化"
 curl -X POST http://localhost:8080/api/borrowers \
   -H "Content-Type: application/json" \
@@ -14,6 +15,7 @@ curl -X POST http://localhost:8080/api/borrowers \
     "industry": "Technology"
   }'
 
+# Investorの登録
 echo "\n"
 echo "borrowersの初期化"
 curl -X POST http://localhost:8080/api/investors \
@@ -34,6 +36,7 @@ curl -X POST http://localhost:8080/api/investors \
     "currentInvestments": 0
   }'
 
+# Syndicateの登録
 echo "\n"
 echo "syndicatesの初期化"
 curl -X POST http://localhost:8080/api/syndicates \
@@ -44,6 +47,7 @@ curl -X POST http://localhost:8080/api/syndicates \
     "totalCommitment": 5000000
   }'
 
+# SharePieの登録
 echo "\n"
 echo "share-piesの初期化"
 curl -X POST http://localhost:8080/api/share-pies \
@@ -55,8 +59,9 @@ curl -X POST http://localhost:8080/api/share-pies \
     }
   }'
 
+# Facilityの登録
 echo "\n"
-echo "facilitiesの初期化"
+echo "facilitiesの登録"
 curl -X POST http://localhost:8080/api/facilities \
   -H "Content-Type: application/json" \
   -d '{
@@ -70,14 +75,14 @@ curl -X POST http://localhost:8080/api/facilities \
     "borrowerId": 1
   }'
 
+# FacilityInvestmentsの登録
 echo "\n"
-echo "facilityInvestmentsの初期化"
+echo "facilityInvestmentsの登録"
 curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
     "investorId": 1,
-    "date": "2024-01-28T10:00:00",
-    "processedDate": "2024-01-29T10:00:00",
+    "date": "2025-01-28T10:00:00",
     "relatedPositionId": 1
   }'
 
@@ -85,13 +90,13 @@ curl -X POST http://localhost:8080/api/facility-investments \
   -H "Content-Type: application/json" \
   -d '{
     "investorId": 2,
-    "date": "2024-01-29T10:00:00",
-    "processedDate": "2024-01-30T10:00:00",
+    "date": "2025-01-29T10:00:00",
     "relatedPositionId": 1
   }'
 
+# ドローダウンの登録
 echo "\n"
-echo "drawdownsの初期化"
+echo "drawdownsの登録"
 curl -X POST http://localhost:8080/api/drawdowns \
   -H "Content-Type: application/json" \
   -d '{
@@ -107,3 +112,26 @@ curl -X POST http://localhost:8080/api/drawdowns \
       }
     }
   }'
+
+# ドローダウンの実行
+echo "\n"
+echo "drawdownsの実行"
+curl -X PUT http://localhost:8080/api/drawdowns/3/execute
+
+# 手数料支払いの登録
+echo "\n"
+echo "fee-paymentsの登録"
+curl -X POST http://localhost:8080/api/fee-payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facilityId": 1,
+    "feeType": "COMMITMENT_FEE",
+    "paymentAmount": 20000,
+    "date": "2025-01-31T15:00:00",
+    "relatedPositionId": 1
+  }'
+
+# 手数料支払いの実行
+echo "\n"
+echo "fee-paymentsの実行"
+curl -X PUT http://localhost:8080/api/fee-payments/4/execute

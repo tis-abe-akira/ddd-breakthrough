@@ -149,4 +149,15 @@ public class FacilityInvestmentService
 
         return toDto(repository.save(investment));
     }
+
+    @Override
+    @Transactional
+    public FacilityInvestmentDto create(FacilityInvestmentDto dto) {
+        FacilityInvestment entity = toEntity(dto);
+        setBaseProperties(entity, dto);
+        entity.setStatus("EXECUTED");  // ここでステータスを直接セット！
+        entity.setProcessedDate(java.time.LocalDateTime.now());
+        entity = repository.save(entity);
+        return toDto(entity);
+    }
 }

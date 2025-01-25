@@ -44,9 +44,7 @@ public class DrawdownService
         entity.setId(dto.getId());
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
-        entity.setProcessedDate(dto.getProcessedDate());
         entity.setAmount(dto.getDrawdownAmount());
-        entity.setDrawdownAmount(dto.getDrawdownAmount());
 
         // 関連するファシリティの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
@@ -80,6 +78,7 @@ public class DrawdownService
                 .id(entity.getId())
                 .type(entity.getType())
                 .date(entity.getDate())
+                .processedDate(entity.getProcessedDate())
                 .amount(entity.getAmount())
                 .relatedPositionId(entity.getRelatedPosition().getId())
                 .amountPieId(entity.getAmountPie() != null ? entity.getAmountPie().getId() : null)
@@ -176,5 +175,18 @@ public class DrawdownService
         drawdown.setAmount(newAmount); // 取引金額も更新
 
         return toDto(repository.save(drawdown));
+    }
+
+    @Override
+    @Transactional
+    public DrawdownDto create(DrawdownDto dto) {
+        // AmountPieの生成
+        if (dto.getAmountPie() != null) {
+            var amountPie = amountPieService.create(dto.getAmountPie());
+            dto.setAmountPieId(amountPie.getId());
+        }
+
+        // 基底クラスのcreateを呼び出し
+        return super.create(dto);
     }
 }
