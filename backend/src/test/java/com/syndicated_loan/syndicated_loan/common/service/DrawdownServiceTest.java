@@ -230,8 +230,9 @@ public class DrawdownServiceTest {
 
         // 2件目のFacilityInvestmentテストデータ
         FacilityInvestmentDto facilityInvestment2 = new FacilityInvestmentDto();
-        facilityInvestment2.setInvestorId(leadBank1.getId());  // ← 保存したIDを使用
+        facilityInvestment2.setInvestorId(leadBank2.getId());
         facilityInvestment2.setDate(LocalDateTime.of(2025, 1, 28, 10, 0, 0));
+        facilityInvestment2.setRelatedPositionId(savedFacility2.getId());  // ← これを追加！
         savedFacilityInvestment2 = facilityInvestmentService.create(facilityInvestment2);
 
     }
@@ -412,22 +413,36 @@ public class DrawdownServiceTest {
 
     @Test
     void testFindByFacility() {
-        // 1件目のDrawdownを作成
+        // 1件目のDrawdown作成
         DrawdownDto drawdown1 = new DrawdownDto();
         drawdown1.setRelatedFacilityId(savedFacility1.getId());
         drawdown1.setDrawdownAmount(new BigDecimal("1000000"));
         drawdown1.setDate(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
         drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
-        drawdown1.setAmountPie(createAmountPie(Map.of(1L, BigDecimal.valueOf(300000), 2L, BigDecimal.valueOf(700000))));
+        
+        // AmountPieを追加
+        AmountPieDto amountPie1 = new AmountPieDto();
+        Map<Long, BigDecimal> amounts1 = new HashMap<>();
+        amounts1.put(leadBank1.getId(), BigDecimal.valueOf(300000));
+        amounts1.put(member1.getId(), BigDecimal.valueOf(700000));
+        drawdown1.setAmountPie(amountPie1);
+        
         drawdownService.create(drawdown1);
 
-        // 2件目のDrawdownを作成（同じFacility）
+        // 2件目のDrawdown作成
         DrawdownDto drawdown2 = new DrawdownDto();
         drawdown2.setRelatedFacilityId(savedFacility1.getId());
         drawdown2.setDrawdownAmount(new BigDecimal("2000000"));
         drawdown2.setDate(LocalDateTime.of(2025, 2, 20, 0, 0, 0));
         drawdown2.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
-        drawdown2.setAmountPie(createAmountPie(Map.of(1L, BigDecimal.valueOf(600000), 2L, BigDecimal.valueOf(1400000))));
+        
+        // AmountPieを追加
+        AmountPieDto amountPie2 = new AmountPieDto();
+        Map<Long, BigDecimal> amounts2 = new HashMap<>();
+        amounts2.put(leadBank1.getId(), BigDecimal.valueOf(600000));
+        amounts2.put(member1.getId(), BigDecimal.valueOf(1400000));
+        drawdown2.setAmountPie(amountPie2);
+        
         drawdownService.create(drawdown2);
 
         // 検索を実行
