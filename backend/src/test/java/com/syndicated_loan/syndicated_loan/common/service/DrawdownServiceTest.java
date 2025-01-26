@@ -83,7 +83,6 @@ public class DrawdownServiceTest {
     @Autowired
     private DrawdownRepository drawdownRepository;
 
-
     private BorrowerDto savedBorrower;
 
     private InvestorDto leadBank1;
@@ -105,7 +104,6 @@ public class DrawdownServiceTest {
 
     private FacilityInvestmentDto savedFacilityInvestment1;
     private FacilityInvestmentDto savedFacilityInvestment2;
-
 
     @BeforeEach
     void setUp() {
@@ -137,7 +135,7 @@ public class DrawdownServiceTest {
         borrower2.setFinancialStatements("2024年度第3四半期決算報告");
         borrower2.setContactInformation("担当者: テスト2\nTEL: 03-0000-0002");
         borrowerService.create(borrower2);
-        
+
         // Investorのテストデータを作成
         leadBank1 = investorService.create(InvestorDto.builder()
                 .name("リード銀行1")
@@ -189,8 +187,8 @@ public class DrawdownServiceTest {
         // 1件目のSharePieテストデータ
         SharePieDto sharePie1 = new SharePieDto();
         sharePie1.setShares(new HashMap<>());
-        sharePie1.getShares().put(leadBank1.getId(), new BigDecimal("30.0000"));  // ← IDを実際の投資家IDに変更
-        sharePie1.getShares().put(member1.getId(), new BigDecimal("70.0000"));    // ← IDを実際の投資家IDに変更
+        sharePie1.getShares().put(leadBank1.getId(), new BigDecimal("30.0000")); // ← IDを実際の投資家IDに変更
+        sharePie1.getShares().put(member1.getId(), new BigDecimal("70.0000")); // ← IDを実際の投資家IDに変更
         savedSharePie1 = sharePieService.create(sharePie1);
 
         // 2件目のSharePieテストデータ
@@ -207,16 +205,16 @@ public class DrawdownServiceTest {
         facility1.setStartDate(LocalDate.of(2025, 1, 27));
         facility1.setTerm(60);
         facility1.setInterestRate(new BigDecimal("2.5"));
-        facility1.setSyndicateId(savedSyndicate1.getId());  // ← 保存したIDを使用
-        facility1.setSharePieId(savedSharePie1.getId());    // ← 保存したIDを使用
-        facility1.setBorrowerId(savedBorrower.getId());    // ← 保存したIDを使用
+        facility1.setSyndicateId(savedSyndicate1.getId()); // ← 保存したIDを使用
+        facility1.setSharePieId(savedSharePie1.getId()); // ← 保存したIDを使用
+        facility1.setBorrowerId(savedBorrower.getId()); // ← 保存したIDを使用
         savedFacility1 = facilityService.create(facility1);
 
         // FacilityInvestmentに、作成されたFacilityのPosition IDを設定
         FacilityInvestmentDto facilityInvestment1 = new FacilityInvestmentDto();
         facilityInvestment1.setInvestorId(leadBank1.getId());
         facilityInvestment1.setDate(LocalDateTime.of(2025, 1, 28, 10, 0, 0));
-        facilityInvestment1.setRelatedPositionId(savedFacility1.getId());  // ← Facilityのidを使用
+        facilityInvestment1.setRelatedPositionId(savedFacility1.getId()); // ← Facilityのidを使用
         savedFacilityInvestment1 = facilityInvestmentService.create(facilityInvestment1);
 
         // 2件目のFacility作成
@@ -227,7 +225,7 @@ public class DrawdownServiceTest {
         facility2.setTerm(48);
         facility2.setInterestRate(new BigDecimal("2.8"));
         facility2.setSyndicateId(savedSyndicate2.getId());
-        facility2.setSharePieId(savedSharePie2.getId());  // ← 2つ目のSharePieを使用
+        facility2.setSharePieId(savedSharePie2.getId()); // ← 2つ目のSharePieを使用
         facility2.setBorrowerId(savedBorrower.getId());
         savedFacility2 = facilityService.create(facility2);
 
@@ -235,7 +233,7 @@ public class DrawdownServiceTest {
         FacilityInvestmentDto facilityInvestment2 = new FacilityInvestmentDto();
         facilityInvestment2.setInvestorId(leadBank2.getId());
         facilityInvestment2.setDate(LocalDateTime.of(2025, 1, 28, 10, 0, 0));
-        facilityInvestment2.setRelatedPositionId(savedFacility2.getId());  // ← これを追加！
+        facilityInvestment2.setRelatedPositionId(savedFacility2.getId()); // ← これを追加！
         savedFacilityInvestment2 = facilityInvestmentService.create(facilityInvestment2);
 
     }
@@ -245,35 +243,35 @@ public class DrawdownServiceTest {
 
         // 1件目のDrawdownテストデータ
         DrawdownDto drawdown1 = new DrawdownDto();
-        drawdown1.setRelatedFacilityId(this.savedFacility1.getId());  // ← 保存したIDを使用
+        drawdown1.setRelatedFacilityId(this.savedFacility1.getId()); // ← 保存したIDを使用
         drawdown1.setDrawdownAmount(new BigDecimal("1000000"));
         drawdown1.setDate(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
-        drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());  // ← これを追加！
+        drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId()); // ← これを追加！
         DrawdownDto savedDrawdown1 = drawdownService.create(drawdown1);
 
         // 2件目のDrawdownテストデータ
         DrawdownDto drawdown2 = new DrawdownDto();
-        drawdown2.setRelatedFacilityId(savedFacility2.getId());  // ← 保存したIDを使用
+        drawdown2.setRelatedFacilityId(savedFacility2.getId()); // ← 保存したIDを使用
         drawdown2.setDrawdownAmount(new BigDecimal("2000000"));
         drawdown2.setDate(LocalDateTime.of(2025, 2, 20, 0, 0, 0));
-        drawdown2.setRelatedPositionId(savedFacilityInvestment2.getRelatedPositionId());  // ← これも追加！
+        drawdown2.setRelatedPositionId(savedFacilityInvestment2.getRelatedPositionId()); // ← これも追加！
         DrawdownDto savedDrawdown2 = drawdownService.create(drawdown2);
 
         List<DrawdownDto> drawdowns = drawdownService.findAll();
-        
+
         // 件数の検証
         assertThat(drawdowns).hasSize(2);
-        
+
         // 1件目のデータ検証
         DrawdownDto firstDrawdown = drawdowns.get(0);
         assertThat(firstDrawdown.getAmount()).isEqualByComparingTo(new BigDecimal("1000000"));
-        assertThat(firstDrawdown.getRelatedFacilityId()).isEqualTo(savedFacility1.getId());  // ← 実際のIDを使用
+        assertThat(firstDrawdown.getRelatedFacilityId()).isEqualTo(savedFacility1.getId()); // ← 実際のIDを使用
         assertThat(firstDrawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
 
         // 2件目のデータ検証
         DrawdownDto secondDrawdown = drawdowns.get(1);
         assertThat(secondDrawdown.getAmount()).isEqualByComparingTo(new BigDecimal("2000000"));
-        assertThat(secondDrawdown.getRelatedFacilityId()).isEqualTo(savedFacility2.getId());  // ← 実際のIDを使用
+        assertThat(secondDrawdown.getRelatedFacilityId()).isEqualTo(savedFacility2.getId()); // ← 実際のIDを使用
         assertThat(secondDrawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 2, 20, 0, 0, 0));
     }
 
@@ -282,13 +280,13 @@ public class DrawdownServiceTest {
 
         // 1件目のDrawdownテストデータ
         DrawdownDto drawdown1 = new DrawdownDto();
-        drawdown1.setRelatedFacilityId(this.savedFacility1.getId());  // ← 保存したIDを使用
+        drawdown1.setRelatedFacilityId(this.savedFacility1.getId()); // ← 保存したIDを使用
         drawdown1.setDrawdownAmount(new BigDecimal("1000000"));
         drawdown1.setDate(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
-        drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());  // ← これを追加！
+        drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId()); // ← これを追加！
         DrawdownDto savedDrawdown1 = drawdownService.create(drawdown1);
 
-        Optional<DrawdownDto> drawdownOpt = drawdownService.findById(savedDrawdown1.getId());  // 保存したIDを使用
+        Optional<DrawdownDto> drawdownOpt = drawdownService.findById(savedDrawdown1.getId()); // 保存したIDを使用
         assertThat(drawdownOpt).isPresent();
         DrawdownDto drawdown = drawdownOpt.get();
         // 全項目の検証
@@ -308,8 +306,8 @@ public class DrawdownServiceTest {
         // AmountPieの設定を修正
         AmountPieDto amountPie = new AmountPieDto();
         Map<Long, BigDecimal> amounts = new HashMap<>();
-        amounts.put(leadBank1.getId(), BigDecimal.valueOf(600000));    // ← 実際の投資家IDを使用
-        amounts.put(member1.getId(), BigDecimal.valueOf(1400000));     // ← 実際の投資家IDを使用
+        amounts.put(leadBank1.getId(), BigDecimal.valueOf(600000)); // ← 実際の投資家IDを使用
+        amounts.put(member1.getId(), BigDecimal.valueOf(1400000)); // ← 実際の投資家IDを使用
         amountPie.setAmounts(amounts);
         drawdown.setAmountPie(amountPie);
 
@@ -326,12 +324,12 @@ public class DrawdownServiceTest {
         DrawdownDto drawdownFromDb = drawdownOpt.get();
 
         var amountPieFromDb = drawdownFromDb.getAmountPie();
-        assertThat(amountPieFromDb).isNotNull();  // ここでnullになってる
+        assertThat(amountPieFromDb).isNotNull(); // ここでnullになってる
         assertThat(amountPieFromDb.getAmounts()).hasSize(2);
-        assertThat(amountPieFromDb.getAmounts().get(leadBank1.getId()))  // ← 固定値じゃなくて実際のIDを使用
-            .isEqualByComparingTo(new BigDecimal("600000"));
-        assertThat(amountPieFromDb.getAmounts().get(member1.getId()))    // ← 固定値じゃなくて実際のIDを使用
-            .isEqualByComparingTo(new BigDecimal("1400000"));
+        assertThat(amountPieFromDb.getAmounts().get(leadBank1.getId())) // ← 固定値じゃなくて実際のIDを使用
+                .isEqualByComparingTo(new BigDecimal("600000"));
+        assertThat(amountPieFromDb.getAmounts().get(member1.getId())) // ← 固定値じゃなくて実際のIDを使用
+                .isEqualByComparingTo(new BigDecimal("1400000"));
     }
 
     @Test
@@ -342,13 +340,23 @@ public class DrawdownServiceTest {
         drawdown.setDrawdownAmount(new BigDecimal("2000000"));
         drawdown.setDate(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
         drawdown.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+
+        // AmountPieの作成を修正
         AmountPieDto amountPie = new AmountPieDto();
         Map<Long, BigDecimal> amounts = new HashMap<>();
-        amounts.put(1L, BigDecimal.valueOf(400000));
-        amounts.put(2L, BigDecimal.valueOf(1600000));
+        amounts.put(leadBank1.getId(), BigDecimal.valueOf(600000));
+        amounts.put(member1.getId(), BigDecimal.valueOf(1400000));
         amountPie.setAmounts(amounts);
+        amountPie.setVersion(1L);
         drawdown.setAmountPie(amountPie);
+
         DrawdownDto savedDrawdown = drawdownService.create(drawdown);
+
+        // AmountPieの情報を取得
+        Optional<DrawdownDto> savedDrawdownOpt = drawdownService.findById(savedDrawdown.getId());
+        assertThat(savedDrawdownOpt).isPresent();
+        DrawdownDto retrievedDrawdown = savedDrawdownOpt.get();
+        assertThat(retrievedDrawdown.getAmountPie()).isNotNull();
 
         // 更新用のデータを作成
         DrawdownDto updateDto = new DrawdownDto();
@@ -357,13 +365,16 @@ public class DrawdownServiceTest {
         updateDto.setDrawdownAmount(new BigDecimal("3000000"));
         updateDto.setDate(LocalDateTime.of(2025, 2, 1, 10, 0, 0));
         updateDto.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        updateDto.setVersion(retrievedDrawdown.getVersion());
+
+        // 更新用のAmountPieも修正
         AmountPieDto newAmountPie = new AmountPieDto();
         Map<Long, BigDecimal> newAmounts = new HashMap<>();
-        newAmounts.put(1L, BigDecimal.valueOf(900000));
-        newAmounts.put(2L, BigDecimal.valueOf(2100000));
+        newAmounts.put(leadBank1.getId(), BigDecimal.valueOf(900000));
+        newAmounts.put(member1.getId(), BigDecimal.valueOf(2100000));
         newAmountPie.setAmounts(newAmounts);
+        newAmountPie.setVersion(retrievedDrawdown.getAmountPie().getVersion());
         updateDto.setAmountPie(newAmountPie);
-        updateDto.setVersion(savedDrawdown.getVersion());
 
         // 更新を実行
         DrawdownDto updatedDrawdown = drawdownService.update(savedDrawdown.getId(), updateDto);
@@ -372,10 +383,17 @@ public class DrawdownServiceTest {
         assertThat(updatedDrawdown.getId()).isEqualTo(savedDrawdown.getId());
         assertThat(updatedDrawdown.getAmount()).isEqualByComparingTo(new BigDecimal("3000000"));
         assertThat(updatedDrawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 2, 1, 10, 0, 0));
-        assertThat(updatedDrawdown.getAmountPie().getAmounts().get(1L))
-            .isEqualByComparingTo(new BigDecimal("900000"));
-        assertThat(updatedDrawdown.getAmountPie().getAmounts().get(2L))
-            .isEqualByComparingTo(new BigDecimal("2100000"));
+
+        // AmountPieがnullじゃないことを先に確認
+        assertThat(updatedDrawdown.getAmountPie()).isNotNull();
+
+        // それからAmountPieの中身を検証
+        var actualAmounts = updatedDrawdown.getAmountPie().getAmounts();
+        assertThat(actualAmounts).isNotNull();
+        assertThat(actualAmounts.get(leadBank1.getId()))
+                .isEqualByComparingTo(new BigDecimal("900000"));
+        assertThat(actualAmounts.get(member1.getId()))
+                .isEqualByComparingTo(new BigDecimal("2100000"));
     }
 
     @Test
@@ -396,7 +414,7 @@ public class DrawdownServiceTest {
 
         // 削除を実行
         assertThatCode(() -> drawdownService.delete(savedDrawdown.getId()))
-            .doesNotThrowAnyException();
+                .doesNotThrowAnyException();
 
         // 削除されたことを確認
         assertThat(drawdownService.findById(savedDrawdown.getId())).isEmpty();
@@ -405,8 +423,8 @@ public class DrawdownServiceTest {
     @Test
     void testDeleteNotFound() {
         assertThatThrownBy(() -> drawdownService.delete(999L))
-            .isInstanceOf(RuntimeException.class)
-            .hasMessageContaining("Entity not found with id: 999");
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Entity not found with id: 999");
     }
 
     @Test
@@ -417,14 +435,15 @@ public class DrawdownServiceTest {
         drawdown1.setDrawdownAmount(new BigDecimal("1000000"));
         drawdown1.setDate(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
         drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
-        
-        // AmountPieを追加
+
+        // AmountPieを修正
         AmountPieDto amountPie1 = new AmountPieDto();
         Map<Long, BigDecimal> amounts1 = new HashMap<>();
-        amounts1.put(leadBank1.getId(), BigDecimal.valueOf(300000));
-        amounts1.put(member1.getId(), BigDecimal.valueOf(700000));
+        amounts1.put(leadBank1.getId(), BigDecimal.valueOf(300000)); // ← 実際の投資家ID
+        amounts1.put(member1.getId(), BigDecimal.valueOf(700000)); // ← 実際の投資家ID
+        amountPie1.setAmounts(amounts1);
         drawdown1.setAmountPie(amountPie1);
-        
+
         drawdownService.create(drawdown1);
 
         // 2件目のDrawdown作成
@@ -433,15 +452,21 @@ public class DrawdownServiceTest {
         drawdown2.setDrawdownAmount(new BigDecimal("2000000"));
         drawdown2.setDate(LocalDateTime.of(2025, 2, 20, 0, 0, 0));
         drawdown2.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
-        
-        // AmountPieを追加
+
+        // AmountPieを修正
         AmountPieDto amountPie2 = new AmountPieDto();
         Map<Long, BigDecimal> amounts2 = new HashMap<>();
-        amounts2.put(leadBank1.getId(), BigDecimal.valueOf(600000));
-        amounts2.put(member1.getId(), BigDecimal.valueOf(1400000));
+        amounts2.put(leadBank1.getId(), BigDecimal.valueOf(600000)); // ← 実際の投資家ID
+        amounts2.put(member1.getId(), BigDecimal.valueOf(1400000)); // ← 実際の投資家ID
+        amountPie2.setAmounts(amounts2);
         drawdown2.setAmountPie(amountPie2);
-        
-        drawdownService.create(drawdown2);
+
+        DrawdownDto saved2 = drawdownService.create(drawdown2);
+
+        // デバッグ情報を出力
+        System.out.println("Debug - Amount distribution:");
+        System.out.println("LeadBank1 (ID: " + leadBank1.getId() + "): 30%");
+        System.out.println("Member1 (ID: " + member1.getId() + "): 70%");
 
         // 検索を実行
         List<DrawdownDto> drawdowns = drawdownService.findByRelatedFacility(savedFacility1.getId());
