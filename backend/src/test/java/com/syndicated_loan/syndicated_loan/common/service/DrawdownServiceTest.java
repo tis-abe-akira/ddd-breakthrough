@@ -209,9 +209,6 @@ public class DrawdownServiceTest {
         facility1.setBorrowerId(savedBorrower.getId());    // ← 保存したIDを使用
         savedFacility1 = facilityService.create(facility1);
 
-        // FacilityのPosition IDを取得するために、作成後のFacilityを取得
-        FacilityDto savedFacility1 = facilityService.create(facility1);
-        
         // FacilityInvestmentに、作成されたFacilityのPosition IDを設定
         FacilityInvestmentDto facilityInvestment1 = new FacilityInvestmentDto();
         facilityInvestment1.setInvestorId(leadBank1.getId());
@@ -226,7 +223,7 @@ public class DrawdownServiceTest {
         facility2.setStartDate(LocalDate.of(2025, 2, 1));
         facility2.setTerm(48);
         facility2.setInterestRate(new BigDecimal("2.8"));
-        facility2.setSyndicateId(savedSyndicate1.getId());
+        facility2.setSyndicateId(savedSyndicate2.getId());
         facility2.setSharePieId(savedSharePie2.getId());  // ← 2つ目のSharePieを使用
         facility2.setBorrowerId(savedBorrower.getId());
         savedFacility2 = facilityService.create(facility2);
