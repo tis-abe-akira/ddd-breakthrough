@@ -91,9 +91,11 @@ public class DrawdownServiceTest {
 
     private InvestorDto member2;
 
-    private SyndicateDto savedSyndicate;
+    private SyndicateDto savedSyndicate1;
+    private SyndicateDto savedSyndicate2;
 
-    private SharePieDto savedSharePie;
+    private SharePieDto savedSharePie1;
+    private SharePieDto savedSharePie2;
 
     private FacilityDto savedFacility1;
     private FacilityDto savedFacility2;
@@ -172,28 +174,28 @@ public class DrawdownServiceTest {
         syndicate1.setMemberIds(Set.of(member1.getId(), member2.getId()));
         syndicate1.setTotalCommitment(new BigDecimal("5000000"));
         syndicate1.setVersion(1L);
-        savedSyndicate = syndicateService.create(syndicate1);
+        savedSyndicate1 = syndicateService.create(syndicate1);
 
         SyndicateDto syndicate2 = new SyndicateDto();
         syndicate2.setLeadBankId(leadBank2.getId()); // ちゃんとしたIDを設定
         syndicate2.setMemberIds(Set.of(member1.getId(), leadBank1.getId()));
         syndicate2.setTotalCommitment(new BigDecimal("2000000"));
         syndicate2.setVersion(1L);
-        syndicateService.create(syndicate2);
+        savedSyndicate2 = syndicateService.create(syndicate2);
 
         // 1件目のSharePieテストデータ
         SharePieDto sharePie1 = new SharePieDto();
         sharePie1.setShares(new HashMap<>());
         sharePie1.getShares().put(leadBank1.getId(), new BigDecimal("30.0000"));  // ← IDを実際の投資家IDに変更
         sharePie1.getShares().put(member1.getId(), new BigDecimal("70.0000"));    // ← IDを実際の投資家IDに変更
-        savedSharePie = sharePieService.create(sharePie1);
+        savedSharePie1 = sharePieService.create(sharePie1);
 
         // 2件目のSharePieテストデータ
         SharePieDto sharePie2 = new SharePieDto();
         sharePie2.setShares(new HashMap<>());
         sharePie2.getShares().put(leadBank2.getId(), new BigDecimal("50.0000"));
         sharePie2.getShares().put(member2.getId(), new BigDecimal("50.0000"));
-        SharePieDto savedSharePie2 = sharePieService.create(sharePie2);
+        savedSharePie2 = sharePieService.create(sharePie2);
 
         // 1件目のFacility作成
         FacilityDto facility1 = new FacilityDto();
@@ -202,8 +204,8 @@ public class DrawdownServiceTest {
         facility1.setStartDate(LocalDate.of(2025, 1, 27));
         facility1.setTerm(60);
         facility1.setInterestRate(new BigDecimal("2.5"));
-        facility1.setSyndicateId(savedSyndicate.getId());  // ← 保存したIDを使用
-        facility1.setSharePieId(savedSharePie.getId());    // ← 保存したIDを使用
+        facility1.setSyndicateId(savedSyndicate1.getId());  // ← 保存したIDを使用
+        facility1.setSharePieId(savedSharePie1.getId());    // ← 保存したIDを使用
         facility1.setBorrowerId(savedBorrower.getId());    // ← 保存したIDを使用
         savedFacility1 = facilityService.create(facility1);
 
@@ -217,15 +219,6 @@ public class DrawdownServiceTest {
         facilityInvestment1.setRelatedPositionId(savedFacility1.getId());  // ← Facilityのidを使用
         savedFacilityInvestment1 = facilityInvestmentService.create(facilityInvestment1);
 
-        // 同様に2件目も
-        FacilityDto savedFacility2 = facilityService.create(facility2);
-        
-        FacilityInvestmentDto facilityInvestment2 = new FacilityInvestmentDto();
-        facilityInvestment2.setInvestorId(leadBank2.getId());
-        facilityInvestment2.setDate(LocalDateTime.of(2025, 1, 28, 10, 0, 0));
-        facilityInvestment2.setRelatedPositionId(savedFacility2.getId());  // ← Facilityのidを使用
-        savedFacilityInvestment2 = facilityInvestmentService.create(facilityInvestment2);
-
         // 2件目のFacility作成
         FacilityDto facility2 = new FacilityDto();
         facility2.setTotalAmount(new BigDecimal("3000000"));
@@ -233,7 +226,7 @@ public class DrawdownServiceTest {
         facility2.setStartDate(LocalDate.of(2025, 2, 1));
         facility2.setTerm(48);
         facility2.setInterestRate(new BigDecimal("2.8"));
-        facility2.setSyndicateId(savedSyndicate.getId());
+        facility2.setSyndicateId(savedSyndicate1.getId());
         facility2.setSharePieId(savedSharePie2.getId());  // ← 2つ目のSharePieを使用
         facility2.setBorrowerId(savedBorrower.getId());
         savedFacility2 = facilityService.create(facility2);
