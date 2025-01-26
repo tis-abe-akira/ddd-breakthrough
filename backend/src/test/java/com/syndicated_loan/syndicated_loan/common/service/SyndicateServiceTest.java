@@ -17,6 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.syndicated_loan.syndicated_loan.common.repository.PositionRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.FacilityInvestmentRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.FacilityRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.SharePieRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.InvestorRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.BorrowerRepository;
+
 @SpringBootTest
 public class SyndicateServiceTest {
 
@@ -60,12 +68,12 @@ public class SyndicateServiceTest {
     @BeforeEach
     void setUp() {
         // 外部キー制約を考慮した削除順序
-        positionRepository.deleteAll(); // まずPositionを削除
-        drawdownRepository.deleteAll();
+        drawdownRepository.deleteAll(); // まずDrawdownを削除
         facilityInvestmentRepository.deleteAll();
         facilityRepository.deleteAll();
+        positionRepository.deleteAll(); // その後でPositionを削除
         sharePieRepository.deleteAll();
-        syndicateRepository.deleteAll(); // 最後にSyndicateを削除
+        syndicateRepository.deleteAll();
         investorRepository.deleteAll();
         borrowerRepository.deleteAll();
 
