@@ -68,6 +68,9 @@ public class DrawdownServiceTest {
     @Autowired
     private FacilityRepository facilityRepository;
 
+    // @Autowired
+    // private pointRepository pointRepository;
+
     @Autowired
     private FacilityInvestmentService facilityInvestmentService;
 
@@ -264,13 +267,13 @@ public class DrawdownServiceTest {
         // 1件目のデータ検証
         DrawdownDto firstDrawdown = drawdowns.get(0);
         assertThat(firstDrawdown.getAmount()).isEqualByComparingTo(new BigDecimal("1000000"));
-        assertThat(firstDrawdown.getRelatedFacilityId()).isEqualTo(1L);
+        assertThat(firstDrawdown.getRelatedFacilityId()).isEqualTo(savedFacility1.getId());  // ← 実際のIDを使用
         assertThat(firstDrawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
 
         // 2件目のデータ検証
         DrawdownDto secondDrawdown = drawdowns.get(1);
         assertThat(secondDrawdown.getAmount()).isEqualByComparingTo(new BigDecimal("2000000"));
-        assertThat(secondDrawdown.getRelatedFacilityId()).isEqualTo(2L);
+        assertThat(secondDrawdown.getRelatedFacilityId()).isEqualTo(savedFacility2.getId());  // ← 実際のIDを使用
         assertThat(secondDrawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 2, 20, 0, 0, 0));
     }
 
@@ -290,7 +293,7 @@ public class DrawdownServiceTest {
         DrawdownDto drawdown = drawdownOpt.get();
         // 全項目の検証
         assertThat(drawdown.getAmount()).isEqualByComparingTo(new BigDecimal("1000000"));
-        assertThat(drawdown.getRelatedFacilityId()).isEqualTo(1L);
+        assertThat(drawdown.getRelatedFacilityId()).isEqualTo(savedFacility1.getId());
         assertThat(drawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
     }
 
@@ -311,7 +314,7 @@ public class DrawdownServiceTest {
 
         assertThat(savedDrawdown.getId()).isNotNull();
         assertThat(savedDrawdown.getAmount()).isEqualByComparingTo(new BigDecimal("2000000"));
-        assertThat(savedDrawdown.getRelatedFacilityId()).isEqualTo(1L);
+        assertThat(savedDrawdown.getRelatedFacilityId()).isEqualTo(savedFacilityInvestment1.getRelatedPositionId());
         assertThat(savedDrawdown.getDate()).isEqualTo(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
 
         // DBの状態を検証
@@ -319,7 +322,7 @@ public class DrawdownServiceTest {
         assertThat(drawdownOpt).isPresent();
         DrawdownDto drawdownFromDb = drawdownOpt.get();
         assertThat(drawdownFromDb.getAmount()).isEqualByComparingTo(new BigDecimal("2000000"));
-        assertThat(drawdownFromDb.getRelatedFacilityId()).isEqualTo(1L);
+        assertThat(drawdownFromDb.getRelatedFacilityId()).isEqualTo(savedFacilityInvestment1.getRelatedPositionId());
         assertThat(drawdownFromDb.getDate()).isEqualTo(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
         var amountPieFromDb = drawdownFromDb.getAmountPie();
         assertThat(amountPieFromDb).isNotNull();
