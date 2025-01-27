@@ -9,6 +9,7 @@ import com.syndicated_loan.syndicated_loan.common.testutil.TestDataBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,11 @@ public class DrawdownServiceTest {
         savedFacilityInvestment1 = (FacilityInvestmentDto) testData.get("facilityInvestment1");
         savedFacilityInvestment2 = (FacilityInvestmentDto) testData.get("facilityInvestment2");
 
+    }
+
+    @AfterEach
+    void tearDown() {
+        testDataBuilder.cleanupAll();
     }
 
     @Test
