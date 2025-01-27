@@ -17,8 +17,8 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class DrawdownService 
-    extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
+public class DrawdownService
+        extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
 
     private final FacilityService facilityService;
 
@@ -72,12 +72,18 @@ public class DrawdownService
         setBaseDtoProperties(dto, entity);
         dto.setRelatedFacility(facilityService.toDto(entity.getRelatedFacility()));
 
+        // AmountPieの情報も設定
+        if (entity.getAmountPie() != null) {
+            dto.setAmountPie(amountPieService.toDto(entity.getAmountPie()));
+        }
+
         // 残額と利用率の計算
         Facility facility = entity.getRelatedFacility();
         dto.setRemainingFacilityAmount(facility.getAvailableAmount());
         if (facility.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal utilizationRate = BigDecimal.ONE
-                    .subtract(facility.getAvailableAmount().divide(facility.getTotalAmount(), 4, BigDecimal.ROUND_HALF_UP))
+                    .subtract(facility.getAvailableAmount().divide(facility.getTotalAmount(), 4,
+                            BigDecimal.ROUND_HALF_UP))
                     .multiply(new BigDecimal("100"));
             dto.setUtilizationRate(utilizationRate);
         }
@@ -169,5 +175,31 @@ public class DrawdownService
 
         // 基底クラスのcreateを呼び出し
         return super.create(dto);
+    }
+
+    @Override
+    @Transactional
+    public DrawdownDto update(Long id, DrawdownDto dto) {
+        // AmountPieの更新
+        if (dto.getAmountPie() != null) {
+            // 既存のAmountPieを取得
+            Drawdown existingDrawdown = repository.findById(id)
+                    .orElseThrow(() -> new BusinessException("Drawdown not found", "DRAWDOWN_NOT_FOUND"));
+
+            if (existingDrawdown.getAmountPie() != null) {
+                // 既存のAmountPieを更新
+                var updatedAmountPie = amountPieService.update(
+                        existingDrawdown.getAmountPie().getId(),
+                        dto.getAmountPie());
+                dto.setAmountPieId(updatedAmountPie.getId());
+            } else {
+                // 新しいAmountPieを作成
+                var newAmountPie = amountPieService.create(dto.getAmountPie());
+                dto.setAmountPieId(newAmountPie.getId());
+            }
+        }
+
+        // 基底クラスのupdateを呼び出し
+        return super.update(id, dto);
     }
 }
