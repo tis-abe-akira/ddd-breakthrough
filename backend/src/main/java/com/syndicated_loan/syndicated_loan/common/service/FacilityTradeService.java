@@ -29,7 +29,7 @@ public class FacilityTradeService
             PositionService positionService,
             InvestorService investorService,
             FacilityService facilityService) {
-        super(repository, amountPieService, positionService);
+        super(repository, amountPieService, positionService, investorService);
         this.investorService = investorService;
         this.facilityService = facilityService;
     }

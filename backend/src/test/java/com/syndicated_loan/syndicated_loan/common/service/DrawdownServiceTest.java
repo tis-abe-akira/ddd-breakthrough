@@ -33,6 +33,9 @@ public class DrawdownServiceTest {
     @Autowired
     private TestDataBuilder testDataBuilder;
 
+    @Autowired
+    private InvestorService investorService;
+
     private InvestorDto leadBank1;
 
     private InvestorDto member1;
@@ -270,6 +273,43 @@ public class DrawdownServiceTest {
         // 結果を検証
         assertThat(drawdowns).hasSize(2);
         assertThat(drawdowns).allMatch(d -> d.getRelatedFacilityId().equals(savedFacility1.getId()));
+    }
+
+    @Test
+    void testExecuteDrawdown_UpdatesInvestorCurrentInvestments() {
+        // Drawdownを作成
+        DrawdownDto drawdown = new DrawdownDto();
+        drawdown.setRelatedFacilityId(savedFacility1.getId());
+        drawdown.setDrawdownAmount(new BigDecimal("2000000"));
+        drawdown.setDate(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
+        drawdown.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+
+        // AmountPieの作成
+        AmountPieDto amountPie = new AmountPieDto();
+        Map<Long, BigDecimal> amounts = new HashMap<>();
+        amounts.put(leadBank1.getId(), BigDecimal.valueOf(600000));
+        amounts.put(member1.getId(), BigDecimal.valueOf(1400000));
+        amountPie.setAmounts(amounts);
+        amountPie.setVersion(1L);
+        drawdown.setAmountPie(amountPie);
+
+        DrawdownDto savedDrawdown = drawdownService.create(drawdown);
+
+        // 実行前の投資額を記録
+        BigDecimal leadBank1InitialInvestment = leadBank1.getCurrentInvestments();
+        BigDecimal member1InitialInvestment = member1.getCurrentInvestments();
+
+        // ドローダウンを実行
+        drawdownService.executeDrawdown(savedDrawdown.getId());
+
+        // 投資家の現在の投資額が正しく更新されていることを確認
+        InvestorDto updatedLeadBank1 = investorService.findById(leadBank1.getId()).get();
+        InvestorDto updatedMember1 = investorService.findById(member1.getId()).get();
+
+        assertThat(updatedLeadBank1.getCurrentInvestments())
+                .isEqualByComparingTo(leadBank1InitialInvestment.add(BigDecimal.valueOf(600000)));
+        assertThat(updatedMember1.getCurrentInvestments())
+                .isEqualByComparingTo(member1InitialInvestment.add(BigDecimal.valueOf(1400000)));
     }
 
 }

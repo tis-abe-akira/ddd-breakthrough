@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.DrawdownDto;
+import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
 import com.syndicated_loan.syndicated_loan.common.entity.Drawdown;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
 import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
@@ -26,8 +27,9 @@ public class DrawdownService
             DrawdownRepository repository,
             AmountPieService amountPieService,
             PositionService positionService,
-            FacilityService facilityService) {
-        super(repository, amountPieService, positionService);
+            FacilityService facilityService,
+            InvestorService investorService) {
+        super(repository, amountPieService, positionService, investorService);
         this.facilityService = facilityService;
     }
 
@@ -131,6 +133,11 @@ public class DrawdownService
 
         // ファシリティの利用可能額を更新
         facilityService.updateAvailableAmount(facility.getId(), newAvailableAmount);
+
+        // 投資家の現在の投資額を更新（増額）
+        // AmountPieエンティティをDTOに変換してから渡す
+        AmountPieDto amountPieDto = amountPieService.toDto(drawdown.getAmountPie());
+        updateInvestorCurrentInvestments(amountPieDto, BigDecimal.ONE);
 
         // ドローダウンのステータスを更新
         drawdown.setStatus("EXECUTED");
