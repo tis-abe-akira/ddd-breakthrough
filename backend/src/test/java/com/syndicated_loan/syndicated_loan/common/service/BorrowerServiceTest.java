@@ -1,7 +1,6 @@
 package com.syndicated_loan.syndicated_loan.common.service;
 
 import com.syndicated_loan.syndicated_loan.common.dto.BorrowerDto;
-import com.syndicated_loan.syndicated_loan.common.repository.BorrowerRepository;
 import com.syndicated_loan.syndicated_loan.common.testutil.TestDataBuilder;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,39 +25,12 @@ class BorrowerServiceTest {
     @Autowired
     private BorrowerService borrowerService;
 
-    // @Autowired
-    // private BorrowerRepository borrowerRepository;
-
     private BorrowerDto borrower1;  // テストデータを保持する変数を追加
-    private BorrowerDto borrower2;  // テストデータを保持する変数を追加
 
     @BeforeEach
     void setUp() {
-        // borrowerRepository.deleteAll();
-
-        // // 1件目のテストデータ
-        // BorrowerDto borrower1 = new BorrowerDto();
-        // borrower1.setCompanyType("株式会社");
-        // borrower1.setIndustry("製造業");
-        // borrower1.setName("テスト製造株式会社1");
-        // borrower1.setCreditRating("A+");
-        // borrower1.setFinancialStatements("直近3年間の財務諸表データ");
-        // borrower1.setContactInformation("担当者: テスト1\nTEL: 03-0000-0001\nEmail: test1@example.com");
-        // savedBorrower = borrowerService.create(borrower1);
-
-        // // 2件目のテストデータ
-        // BorrowerDto borrower2 = new BorrowerDto();
-        // borrower2.setCompanyType("有限会社");
-        // borrower2.setIndustry("小売業");
-        // borrower2.setName("テスト商事2");
-        // borrower2.setCreditRating("BB+");
-        // borrower2.setFinancialStatements("2024年度第3四半期決算報告");
-        // borrower2.setContactInformation("担当者: テスト2\nTEL: 03-0000-0002");
-        // borrowerService.create(borrower2);
-
         Map<String, Object> testData = testDataBuilder.getTestDataForBorrower();
         borrower1 = (BorrowerDto) testData.get("borrower1");
-        borrower2 = (BorrowerDto) testData.get("borrower2");
     }
 
     @Test
