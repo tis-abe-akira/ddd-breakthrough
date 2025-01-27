@@ -32,7 +32,8 @@ public class TestDataBuilder {
     private final BorrowerRepository borrowerRepository;
 
     // 各エンティティのフィールド
-    private BorrowerDto borrower;
+    private BorrowerDto borrower1;
+    private BorrowerDto borrower2;
     private InvestorDto leadBank1;
     private InvestorDto leadBank2;
     private InvestorDto member1;
@@ -62,7 +63,8 @@ public class TestDataBuilder {
     }
 
     private void clearFields() {
-        borrower = null;
+        borrower1 = null;
+        borrower2 = null;
         leadBank1 = null;
         leadBank2 = null;
         member1 = null;
@@ -80,10 +82,12 @@ public class TestDataBuilder {
     // Borrowerのテストデータを取得
     public Map<String, Object> getTestDataForBorrower() {
         cleanupAll();
-        borrower = createBorrower();
+        borrower1 = createBorrower1();
+        borrower2 = createBorrower2();
 
         Map<String, Object> testData = new HashMap<>();
-        testData.put("borrower", borrower);
+        testData.put("borrower1", borrower1);
+        testData.put("borrower2", borrower2);
         return testData;
     }
 
@@ -140,17 +144,17 @@ public class TestDataBuilder {
     // Facilityのテストデータを取得
     public Map<String, Object> getTestDataForFacility() {
         Map<String, Object> sharePieData = getTestDataForSharePie();
-        borrower = createBorrower();
+        borrower1 = createBorrower1();
         syndicate1 = (SyndicateDto) sharePieData.get("syndicate1");
         syndicate2 = (SyndicateDto) sharePieData.get("syndicate2");
         sharePie1 = (SharePieDto) sharePieData.get("sharePie1");
         sharePie2 = (SharePieDto) sharePieData.get("sharePie2");
 
-        facility1 = createFacility1(syndicate1, sharePie1, borrower);
-        facility2 = createFacility2(syndicate2, sharePie2, borrower);
+        facility1 = createFacility1(syndicate1, sharePie1, borrower1);
+        facility2 = createFacility2(syndicate2, sharePie2, borrower1);
 
         Map<String, Object> testData = new HashMap<>(sharePieData);
-        testData.put("borrower", borrower);
+        testData.put("borrower", borrower1);
         testData.put("facility1", facility1);
         testData.put("facility2", facility2);
         return testData;
@@ -179,7 +183,7 @@ public class TestDataBuilder {
     }
 
     // 以下、各エンティティの作成メソッド...
-    private BorrowerDto createBorrower() {
+    private BorrowerDto createBorrower1() {
         return borrowerService.create(BorrowerDto.builder()
                 .companyType("CORPORATION")
                 .industry("Technology")
@@ -187,6 +191,17 @@ public class TestDataBuilder {
                 .creditRating("A+")
                 .financialStatements("testFinancialStatements")
                 .contactInformation("testContactInformation")
+                .build());
+    }
+
+    private BorrowerDto createBorrower2() {
+        return borrowerService.create(BorrowerDto.builder()
+                .companyType("CORPORATION")
+                .industry("Technology")
+                .name("TestBorrower2")
+                .creditRating("B+")
+                .financialStatements("testFinancialStatements2")
+                .contactInformation("testContactInformation2")
                 .build());
     }
 
