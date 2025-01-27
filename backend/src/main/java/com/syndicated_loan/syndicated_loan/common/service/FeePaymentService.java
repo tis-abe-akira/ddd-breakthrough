@@ -33,8 +33,9 @@ public class FeePaymentService
             AmountPieService amountPieService,
             PositionService positionService,
             FacilityService facilityService,
-            SharePieService sharePieService) {  // 追加！
-        super(repository, amountPieService, positionService);
+            SharePieService sharePieService,
+            InvestorService investorService) {  // 追加！
+        super(repository, amountPieService, positionService, investorService);
         this.facilityService = facilityService;
         this.sharePieService = sharePieService;  // 追加！
     }

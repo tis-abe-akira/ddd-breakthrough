@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.PrincipalPaymentDto;
+import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
 import com.syndicated_loan.syndicated_loan.common.entity.PrincipalPayment;
 import com.syndicated_loan.syndicated_loan.common.entity.Loan;
 import com.syndicated_loan.syndicated_loan.common.repository.PrincipalPaymentRepository;
@@ -19,8 +20,8 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class PrincipalPaymentService 
-    extends TransactionService<PrincipalPayment, PrincipalPaymentDto, PrincipalPaymentRepository> {
+public class PrincipalPaymentService
+        extends TransactionService<PrincipalPayment, PrincipalPaymentDto, PrincipalPaymentRepository> {
 
     private final LoanService loanService;
     private final LoanRepository loanRepository;
@@ -30,8 +31,9 @@ public class PrincipalPaymentService
             AmountPieService amountPieService,
             PositionService positionService,
             LoanService loanService,
-            LoanRepository loanRepository) {
-        super(repository, amountPieService, positionService);
+            LoanRepository loanRepository,
+            InvestorService investorService) {
+        super(repository, amountPieService, positionService, investorService);
         this.loanService = loanService;
         this.loanRepository = loanRepository;
     }
@@ -87,8 +89,8 @@ public class PrincipalPaymentService
         // 残高の計算
         List<PrincipalPayment> previousPayments = repository.findByLoanOrderByDateAsc(entity.getLoan());
         BigDecimal totalPaid = previousPayments.stream()
-                .filter(payment -> payment.getDate().isBefore(entity.getDate()) || 
-                                 payment.getDate().equals(entity.getDate()))
+                .filter(payment -> payment.getDate().isBefore(entity.getDate()) ||
+                        payment.getDate().equals(entity.getDate()))
                 .map(PrincipalPayment::getPaymentAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         dto.setRemainingBalance(entity.getLoan().getTotalAmount().subtract(totalPaid));
@@ -118,7 +120,8 @@ public class PrincipalPaymentService
                 .toList();
     }
 
-    public List<PrincipalPaymentDto> findByLoanAndDateBetween(Long loanId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<PrincipalPaymentDto> findByLoanAndDateBetween(Long loanId, LocalDateTime startDate,
+            LocalDateTime endDate) {
         Loan loan = loanService.findById(loanId)
                 .map(loanService::toEntity)
                 .orElseThrow(() -> new BusinessException("Loan not found", "LOAN_NOT_FOUND"));
@@ -159,6 +162,10 @@ public class PrincipalPaymentService
         loan.setAmount(remainingBalance.subtract(principalPayment.getPaymentAmount()));
         loanRepository.save(loan);
 
+        // 投資家の現在の投資額を更新（減額）
+        AmountPieDto amountPieDto = amountPieService.toDto(principalPayment.getAmountPie());
+        updateInvestorCurrentInvestments(amountPieDto, BigDecimal.valueOf(-1));
+
         return toDto(repository.save(principalPayment));
     }
 
@@ -169,7 +176,8 @@ public class PrincipalPaymentService
                 .orElseThrow(() -> new BusinessException("Principal payment not found", "PRINCIPAL_PAYMENT_NOT_FOUND"));
 
         if ("EXECUTED".equals(principalPayment.getStatus())) {
-            throw new BusinessException("Cannot update executed principal payment", "PRINCIPAL_PAYMENT_ALREADY_EXECUTED");
+            throw new BusinessException("Cannot update executed principal payment",
+                    "PRINCIPAL_PAYMENT_ALREADY_EXECUTED");
         }
 
         if (newAmount.compareTo(BigDecimal.ZERO) <= 0) {

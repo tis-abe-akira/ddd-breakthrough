@@ -24,14 +24,16 @@ public class InterestPaymentService
     extends TransactionService<InterestPayment, InterestPaymentDto, InterestPaymentRepository> {
 
     private final LoanService loanService;
-
+    private final InvestorService investorService;
     public InterestPaymentService(
             InterestPaymentRepository repository,
             AmountPieService amountPieService,
             PositionService positionService,
+            InvestorService investorService,
             LoanService loanService) {
-        super(repository, amountPieService, positionService);
+        super(repository, amountPieService, positionService, investorService);
         this.loanService = loanService;
+        this.investorService = investorService;
     }
 
     @Override

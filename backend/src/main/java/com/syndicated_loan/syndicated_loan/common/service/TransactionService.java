@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.TransactionDto;
 import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
+import com.syndicated_loan.syndicated_loan.common.dto.InvestorDto;
 import com.syndicated_loan.syndicated_loan.common.entity.Transaction;
 import com.syndicated_loan.syndicated_loan.common.entity.AmountPie;
 import com.syndicated_loan.syndicated_loan.common.entity.Position;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Slf4j
 @Service
@@ -25,14 +27,17 @@ public abstract class TransactionService<T extends Transaction, D extends Transa
     // privateからprotectedに変更
     protected final AmountPieService amountPieService;
     protected final PositionService positionService;
+    protected final InvestorService investorService;
 
     protected TransactionService(
             R repository,
             AmountPieService amountPieService,
-            PositionService positionService) {
+            PositionService positionService,
+            InvestorService investorService) {
         super(repository);
         this.amountPieService = amountPieService;
         this.positionService = positionService;
+        this.investorService = investorService;
     }
 
     @Override
@@ -114,5 +119,28 @@ public abstract class TransactionService<T extends Transaction, D extends Transa
         transaction.setAmountPie(amountPie);
 
         return toDto(repository.save(transaction));
+    }
+
+    /**
+     * 投資家の現在の投資額を更新するメソッド
+     * @param amountPie 金額ピース
+     * @param multiplier 乗数
+     */
+    @Transactional
+    protected void updateInvestorCurrentInvestments(AmountPieDto amountPie, BigDecimal multiplier) {
+        if (amountPie == null || amountPie.getAmounts() == null) {
+            return;
+        }
+
+        amountPie.getAmounts().forEach((investorId, amount) -> {
+            InvestorDto investor = investorService.findById(investorId)
+                    .orElseThrow(() -> new BusinessException("Investor not found", "INVESTOR_NOT_FOUND"));
+
+            BigDecimal currentAmount = investor.getCurrentInvestments();
+            BigDecimal updateAmount = amount.multiply(multiplier);
+            investor.setCurrentInvestments(currentAmount.add(updateAmount));
+
+            investorService.update(investorId, investor);
+        });
     }
 }
