@@ -3,6 +3,8 @@ package com.syndicated_loan.syndicated_loan.common.service;
 import com.syndicated_loan.syndicated_loan.common.dto.BorrowerDto;
 import com.syndicated_loan.syndicated_loan.common.testutil.TestDataBuilder;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,11 @@ class BorrowerServiceTest {
         borrower1 = (BorrowerDto) testData.get("borrower1");
     }
 
+    @AfterEach
+    void tearDown() {
+        testDataBuilder.cleanupAll();
+    }
+    
     @Test
     void testFindAll() {
         List<BorrowerDto> borrowers = borrowerService.findAll();
