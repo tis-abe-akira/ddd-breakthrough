@@ -2,134 +2,56 @@ package com.syndicated_loan.syndicated_loan.common.service;
 
 import com.syndicated_loan.syndicated_loan.common.dto.InvestorDto;
 import com.syndicated_loan.syndicated_loan.common.dto.SyndicateDto;
-import com.syndicated_loan.syndicated_loan.common.repository.SyndicateRepository;
+import com.syndicated_loan.syndicated_loan.common.testutil.TestDataBuilder;
+
 import java.math.BigDecimal;
 import java.util.Set;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.syndicated_loan.syndicated_loan.common.repository.PositionRepository;
-import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
-import com.syndicated_loan.syndicated_loan.common.repository.FacilityInvestmentRepository;
-import com.syndicated_loan.syndicated_loan.common.repository.FacilityRepository;
-import com.syndicated_loan.syndicated_loan.common.repository.SharePieRepository;
-import com.syndicated_loan.syndicated_loan.common.repository.InvestorRepository;
-import com.syndicated_loan.syndicated_loan.common.repository.BorrowerRepository;
-
 @SpringBootTest
 public class SyndicateServiceTest {
 
     @Autowired
+    private TestDataBuilder testDataBuilder;
+    
+    @Autowired
     private SyndicateService syndicateService;
 
     @Autowired
-    private SyndicateRepository syndicateRepository;
-
-    @Autowired
-    private InvestorService investorService; // InvestorServiceを追加
-
-    @Autowired
-    private PositionRepository positionRepository;
-
-    @Autowired
-    private DrawdownRepository drawdownRepository;
-
-    @Autowired
-    private FacilityInvestmentRepository facilityInvestmentRepository;
-
-    @Autowired
-    private FacilityRepository facilityRepository;
-
-    @Autowired
-    private SharePieRepository sharePieRepository;
-
-    @Autowired
-    private InvestorRepository investorRepository;
-
-    @Autowired
-    private BorrowerRepository borrowerRepository;
+    private InvestorService investorService;
 
     private InvestorDto leadBank1;
     private InvestorDto leadBank2;
     private InvestorDto member1;
     private InvestorDto member2;
-
-    private SyndicateDto savedSyndicate; // テストデータを保持する変数を追加
+    private SyndicateDto savedSyndicate;
 
     @BeforeEach
     void setUp() {
-        // 外部キー制約を考慮した削除順序
-        drawdownRepository.deleteAll(); // まずDrawdownを削除
-        facilityInvestmentRepository.deleteAll();
-        facilityRepository.deleteAll();
-        positionRepository.deleteAll(); // その後でPositionを削除
-        sharePieRepository.deleteAll();
-        syndicateRepository.deleteAll();
-        investorRepository.deleteAll();
-        borrowerRepository.deleteAll();
+        Map<String, Object> testData = testDataBuilder.getTestDataForSyndicate();
 
-        // 次にInvestorもクリア
-        if (investorService instanceof AbstractBaseService) {
-            ((AbstractBaseService<?, ?, ?, ?>) investorService).getRepository().deleteAll();
-        }
+        leadBank1 = (InvestorDto) testData.get("leadBank1");
+        leadBank2 = (InvestorDto) testData.get("leadBank2");
+        member1 = (InvestorDto) testData.get("member1");
+        member2 = (InvestorDto) testData.get("member2");
+        savedSyndicate = (SyndicateDto) testData.get("syndicate1");
+    }
 
-        // 以降は同じ
-        // まず銀行データを準備
-        leadBank1 = investorService.create(InvestorDto.builder()
-                .name("リード銀行1")
-                .type("銀行")
-                .investmentCapacity(BigDecimal.valueOf(10000000))
-                .currentInvestments(BigDecimal.valueOf(5000000))
-                .version(1L)
-                .build());
-
-        leadBank2 = investorService.create(InvestorDto.builder()
-                .name("リード銀行2")
-                .type("銀行")
-                .investmentCapacity(BigDecimal.valueOf(20000000))
-                .currentInvestments(BigDecimal.valueOf(8000000))
-                .version(1L)
-                .build());
-
-        member1 = investorService.create(InvestorDto.builder()
-                .name("メンバー銀行1")
-                .type("銀行")
-                .investmentCapacity(BigDecimal.valueOf(5000000))
-                .currentInvestments(BigDecimal.valueOf(2000000))
-                .version(1L)
-                .build());
-
-        member2 = investorService.create(InvestorDto.builder()
-                .name("メンバー銀行2")
-                .type("銀行")
-                .investmentCapacity(BigDecimal.valueOf(8000000))
-                .currentInvestments(BigDecimal.valueOf(3000000))
-                .version(1L)
-                .build());
-
-        // シンジケートのテストデータを作成
-        SyndicateDto syndicate1 = new SyndicateDto();
-        syndicate1.setLeadBankId(leadBank1.getId()); // ちゃんとしたIDを設定
-        syndicate1.setMemberIds(Set.of(member1.getId(), member2.getId()));
-        syndicate1.setTotalCommitment(new BigDecimal("1000000"));
-        syndicate1.setVersion(1L);
-        savedSyndicate = syndicateService.create(syndicate1);
-
-        SyndicateDto syndicate2 = new SyndicateDto();
-        syndicate2.setLeadBankId(leadBank2.getId()); // ちゃんとしたIDを設定
-        syndicate2.setMemberIds(Set.of(member1.getId(), leadBank1.getId()));
-        syndicate2.setTotalCommitment(new BigDecimal("2000000"));
-        syndicate2.setVersion(1L);
-        syndicateService.create(syndicate2);
+    @AfterEach
+    void tearDown() {
+        testDataBuilder.cleanupAll();
     }
 
     @Test
@@ -159,7 +81,7 @@ public class SyndicateServiceTest {
         SyndicateDto syndicate = syndicateOpt.get();
         assertThat(syndicate.getLeadBankId()).isEqualTo(leadBank1.getId());
         assertThat(syndicate.getMemberIds()).containsExactlyInAnyOrder(member1.getId(), member2.getId());
-        assertThat(syndicate.getTotalCommitment()).isEqualByComparingTo("1000000");
+        assertThat(syndicate.getTotalCommitment()).isEqualByComparingTo("5000000");
     }
 
     @Test
@@ -194,11 +116,6 @@ public class SyndicateServiceTest {
         assertThat(currentSyndicateOpt).isPresent();
         SyndicateDto currentSyndicate = currentSyndicateOpt.get();
 
-        // バージョンをデバッグ出力
-        System.out.println("======= Version Debug Info =======");
-        System.out.println("1. Initial save version (in setUp): " + savedSyndicate.getVersion());
-        System.out.println("2. Current version from DB: " + currentSyndicate.getVersion());
-
         // 更新用のDTOを作成
         SyndicateDto updateDto = new SyndicateDto();
         updateDto.setId(currentSyndicate.getId());
@@ -207,15 +124,7 @@ public class SyndicateServiceTest {
         updateDto.setTotalCommitment(new BigDecimal("3000000"));
         updateDto.setVersion(currentSyndicate.getVersion());
 
-        System.out.println("3. Version being used for update: " + updateDto.getVersion());
-
         SyndicateDto updatedSyndicate = syndicateService.update(savedSyndicate.getId(), updateDto);
-        System.out.println("4. Version after update: " + updatedSyndicate.getVersion());
-
-        // DBから再取得して最終確認
-        Optional<SyndicateDto> finalCheck = syndicateService.findById(updatedSyndicate.getId());
-        System.out.println("5. Final version in DB: " + finalCheck.get().getVersion());
-        System.out.println("================================");
 
         // 更新したデータを検証
         assertThat(updatedSyndicate.getId()).isEqualTo(currentSyndicate.getId());
@@ -276,11 +185,6 @@ public class SyndicateServiceTest {
         assertThat(finalSyndicateOpt).isPresent();
         SyndicateDto finalSyndicate = finalSyndicateOpt.get();
 
-        System.out.println("======= Member Debug Info =======");
-        currentSyndicate.getMemberIds().forEach(System.out::println);
-        System.out.println("================================");
-        finalSyndicate.getMemberIds().forEach(System.out::println);
-
         // メンバー追加前後でメンバー数が1つ増えていることを検証
         assertThat(currentSyndicate.getMemberIds().size() + 1).isEqualTo(finalSyndicate.getMemberIds().size());
         assertThat(finalSyndicate.getMemberIds()).contains(member2.getId());
@@ -340,8 +244,8 @@ public class SyndicateServiceTest {
 
     @Test
     void testFindByTotalCommitmentGreaterThan() {
-        List<SyndicateDto> syndicates = syndicateService.findByTotalCommitmentGreaterThan(new BigDecimal("1500000"));
+        List<SyndicateDto> syndicates = syndicateService.findByTotalCommitmentGreaterThan(new BigDecimal("2000000"));
         assertThat(syndicates).hasSize(1);
-        assertThat(syndicates.get(0).getTotalCommitment()).isGreaterThan(new BigDecimal("1500000"));
+        assertThat(syndicates.get(0).getTotalCommitment()).isGreaterThan(new BigDecimal("2000000"));
     }
 }
