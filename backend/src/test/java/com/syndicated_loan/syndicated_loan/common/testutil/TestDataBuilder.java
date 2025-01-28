@@ -264,15 +264,23 @@ public class TestDataBuilder {
     }
 
     private SharePieDto createSharePie1(InvestorDto leadBank, InvestorDto member) {
+        Map<Long, BigDecimal> shares = new HashMap<>();
+        shares.put(leadBank.getId(), new BigDecimal("30.0000"));
+        shares.put(member.getId(), new BigDecimal("70.0000"));
+        
         return sharePieService.create(SharePieDto.builder()
-                .shares(Map.of(leadBank.getId(), BigDecimal.valueOf(30), member.getId(), BigDecimal.valueOf(70)))
+                .shares(shares)
                 .version(1L)
                 .build());
     }
 
     private SharePieDto createSharePie2(InvestorDto leadBank, InvestorDto member) {
+        Map<Long, BigDecimal> shares = new HashMap<>();
+        shares.put(leadBank.getId(), new BigDecimal("50.0000"));
+        shares.put(member.getId(), new BigDecimal("50.0000"));
+        
         return sharePieService.create(SharePieDto.builder()
-                .shares(Map.of(leadBank.getId(), BigDecimal.valueOf(50), member.getId(), BigDecimal.valueOf(50)))
+                .shares(shares)
                 .version(1L)
                 .build());
     }
