@@ -20,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.syndicated_loan.syndicated_loan.common.repository.BorrowerRepository;
-
 @SpringBootTest
 public class SyndicateServiceTest {
 
@@ -127,9 +125,6 @@ public class SyndicateServiceTest {
         updateDto.setVersion(currentSyndicate.getVersion());
 
         SyndicateDto updatedSyndicate = syndicateService.update(savedSyndicate.getId(), updateDto);
-
-        // DBから再取得して最終確認
-        Optional<SyndicateDto> finalCheck = syndicateService.findById(updatedSyndicate.getId());
 
         // 更新したデータを検証
         assertThat(updatedSyndicate.getId()).isEqualTo(currentSyndicate.getId());
