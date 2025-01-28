@@ -2,15 +2,18 @@ package com.syndicated_loan.syndicated_loan.common.service;
 
 import java.math.BigDecimal;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.syndicated_loan.syndicated_loan.common.dto.InvestorDto;
-import com.syndicated_loan.syndicated_loan.common.repository.InvestorRepository;
+import com.syndicated_loan.syndicated_loan.common.testutil.TestDataBuilder;
+
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,55 +24,57 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 public class InvestorServiceTest {
 
     @Autowired
-    private InvestorService investorService;
+    private TestDataBuilder testDataBuilder;
 
     @Autowired
-    private InvestorRepository investorRepository;
+    private InvestorService investorService;
 
     private InvestorDto savedInvestor;
 
     @BeforeEach
     void setUp() {
-        investorRepository.deleteAll();
+        Map<String, Object> testData = testDataBuilder.getTestDataForInvestor();
+        savedInvestor = (InvestorDto) testData.get("leadBank1");
+    }
 
-        InvestorDto investor1 = InvestorDto.builder()
-                .name("Investor1")
-                .type("Type1")
-                .investmentCapacity(BigDecimal.valueOf(1000))
-                .currentInvestments(BigDecimal.valueOf(500))
-                .version(1L)
-                .build();
-        savedInvestor = investorService.create(investor1);
-
-        InvestorDto investor2 = InvestorDto.builder()
-                .name("Investor2")
-                .type("Type2")
-                .investmentCapacity(BigDecimal.valueOf(2000))
-                .currentInvestments(BigDecimal.valueOf(1000))
-                .version(1L)
-                .build();
-        investorService.create(investor2);
+    @AfterEach
+    void tearDown() {
+        testDataBuilder.cleanupAll();
     }
 
     @Test
     void testFindAll() {
         List<InvestorDto> investors = investorService.findAll();
 
-        assertThat(investors).hasSize(2);
+        assertThat(investors).hasSize(4);
 
         InvestorDto investor1 = investors.get(0);
-        assertThat(investor1.getName()).isEqualTo("Investor1");
-        assertThat(investor1.getType()).isEqualTo("Type1");
-        assertThat(investor1.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(1000));
-        assertThat(investor1.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertThat(investor1.getName()).isEqualTo("リード銀行1");
+        assertThat(investor1.getType()).isEqualTo("銀行");
+        assertThat(investor1.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(10000000));
+        assertThat(investor1.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(0));
         assertThat(investor1.getVersion()).isEqualTo(1L);
 
         InvestorDto investor2 = investors.get(1);
-        assertThat(investor2.getName()).isEqualTo("Investor2");
-        assertThat(investor2.getType()).isEqualTo("Type2");
-        assertThat(investor2.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(2000));
-        assertThat(investor2.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(1000));
+        assertThat(investor2.getName()).isEqualTo("リード銀行2");
+        assertThat(investor2.getType()).isEqualTo("銀行");
+        assertThat(investor2.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(20000000));
+        assertThat(investor2.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(8000000));
         assertThat(investor2.getVersion()).isEqualTo(1L);
+
+        InvestorDto investor3 = investors.get(2);
+        assertThat(investor3.getName()).isEqualTo("メンバー銀行1");
+        assertThat(investor3.getType()).isEqualTo("銀行");
+        assertThat(investor3.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(10000000));
+        assertThat(investor3.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(0));
+        assertThat(investor3.getVersion()).isEqualTo(1L);
+
+        InvestorDto investor4 = investors.get(3);
+        assertThat(investor4.getName()).isEqualTo("メンバー銀行2");
+        assertThat(investor4.getType()).isEqualTo("銀行");
+        assertThat(investor4.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(20000000));
+        assertThat(investor4.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(0));
+        assertThat(investor4.getVersion()).isEqualTo(1L);
     }
 
     @Test
@@ -78,10 +83,10 @@ public class InvestorServiceTest {
         assertThat(investorOpt).isPresent();
         InvestorDto investor = investorOpt.get();
 
-        assertThat(investor.getName()).isEqualTo("Investor1");
-        assertThat(investor.getType()).isEqualTo("Type1");
-        assertThat(investor.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(1000));
-        assertThat(investor.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertThat(investor.getName()).isEqualTo("リード銀行1");
+        assertThat(investor.getType()).isEqualTo("銀行");
+        assertThat(investor.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(10000000));
+        assertThat(investor.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(0));
         assertThat(investor.getVersion()).isEqualTo(1L);
     }
 
@@ -155,58 +160,58 @@ public class InvestorServiceTest {
 
     @Test
     void testSearch() {
-        List<InvestorDto> investors = investorService.search("Investor1", "Type1", BigDecimal.valueOf(500));
+        List<InvestorDto> investors = investorService.search("リード銀行1", "銀行", BigDecimal.valueOf(10000000));
         assertThat(investors).hasSize(1);
 
         InvestorDto investor = investors.get(0);
-        assertThat(investor.getName()).isEqualTo("Investor1");
-        assertThat(investor.getType()).isEqualTo("Type1");
-        assertThat(investor.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(1000));
-        assertThat(investor.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(500));
+        assertThat(investor.getName()).isEqualTo("リード銀行1");
+        assertThat(investor.getType()).isEqualTo("銀行");
+        assertThat(investor.getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(10000000));
+        assertThat(investor.getCurrentInvestments()).isEqualByComparingTo(BigDecimal.valueOf(0));
         assertThat(investor.getVersion()).isEqualTo(1L);
     }
 
     @Test
     void testFindByName() {
-        Optional<InvestorDto> investor = investorService.findByName("Investor1");
+        Optional<InvestorDto> investor = investorService.findByName("リード銀行1");
         assertThat(investor).isPresent();
-        assertThat(investor.get().getName()).isEqualTo("Investor1");
-        assertThat(investor.get().getType()).isEqualTo("Type1");
-        assertThat(investor.get().getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(1000));
+        assertThat(investor.get().getName()).isEqualTo("リード銀行1");
+        assertThat(investor.get().getType()).isEqualTo("銀行");
+        assertThat(investor.get().getInvestmentCapacity()).isEqualByComparingTo(BigDecimal.valueOf(10000000));
     }
 
     @Test
     void testFindByNameContaining() {
-        List<InvestorDto> investors = investorService.findByNameContaining("Investor");
-        assertThat(investors).hasSize(2);
+        List<InvestorDto> investors = investorService.findByNameContaining("銀行");
+        assertThat(investors).hasSize(4);
     }
 
     @Test
     void testFindByType() {
-        List<InvestorDto> investors = investorService.findByType("Type1");
-        assertThat(investors).hasSize(1);
-        assertThat(investors.get(0).getName()).isEqualTo("Investor1");
+        List<InvestorDto> investors = investorService.findByType("銀行");
+        assertThat(investors).hasSize(4);
+        assertThat(investors.get(0).getName()).isEqualTo("リード銀行1");
     }
 
     @Test
     void testFindByInvestmentCapacityGreaterThan() {
-        List<InvestorDto> investors = investorService.findByInvestmentCapacityGreaterThan(BigDecimal.valueOf(1500));
-        assertThat(investors).hasSize(1);
-        assertThat(investors.get(0).getName()).isEqualTo("Investor2");
+        List<InvestorDto> investors = investorService.findByInvestmentCapacityGreaterThan(BigDecimal.valueOf(19999999));
+        assertThat(investors).hasSize(2);
+        assertThat(investors.get(0).getName()).isEqualTo("リード銀行2");
     }
 
     @Test
     void testFindByCurrentInvestmentsLessThan() {
-        List<InvestorDto> investors = investorService.findByCurrentInvestmentsLessThan(BigDecimal.valueOf(800));
-        assertThat(investors).hasSize(1);
-        assertThat(investors.get(0).getName()).isEqualTo("Investor1");
+        List<InvestorDto> investors = investorService.findByCurrentInvestmentsLessThan(BigDecimal.valueOf(1));
+        assertThat(investors).hasSize(3);
+        assertThat(investors.get(0).getName()).isEqualTo("リード銀行1");
     }
 
     @Test
     void testFindByTypeAndInvestmentCapacityGreaterThan() {
         List<InvestorDto> investors = investorService.findByTypeAndInvestmentCapacityGreaterThan(
-            "Type2", BigDecimal.valueOf(1500));
-        assertThat(investors).hasSize(1);
-        assertThat(investors.get(0).getName()).isEqualTo("Investor2");
+            "銀行", BigDecimal.valueOf(19999999));
+        assertThat(investors).hasSize(2);
+        assertThat(investors.get(0).getName()).isEqualTo("リード銀行2");
     }
 }
