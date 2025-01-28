@@ -20,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRepository> {
 
     private final BorrowerService borrowerService;
@@ -68,13 +68,17 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             entity.setFacility(facility);
         }
 
-        // シェアパイの設定
+        // シェアパイの設定を修正
         if (dto.getSharePieId() != null) {
             SharePie sharePie = sharePieService.findById(dto.getSharePieId())
                     .map(sharePieService::toEntity)
                     .orElseThrow(() -> new BusinessException("SharePie not found", "SHARE_PIE_NOT_FOUND"));
             entity.setSharePie(sharePie);
         }
+
+        // availableAmountの設定を追加（初期値は設定時の金額と同じ）
+        // entity.setAvailableAmount(dto.getAmount());
+        entity.setAvailableAmount(dto.getTotalAmount());
 
         entity.setVersion(dto.getVersion());
         return entity;

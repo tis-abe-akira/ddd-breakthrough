@@ -25,6 +25,7 @@ public class TestDataBuilder {
     private final DrawdownRepository drawdownRepository;
     private final FacilityInvestmentRepository facilityInvestmentRepository;
     private final FacilityRepository facilityRepository;
+    private final LoanRepository loanRepository;
     private final PositionRepository positionRepository;
     private final SharePieRepository sharePieRepository;
     private final SyndicateRepository syndicateRepository;
@@ -50,6 +51,7 @@ public class TestDataBuilder {
     public void cleanupAll() {
         // 外部キー制約を考慮した削除順序
         drawdownRepository.deleteAll();
+        loanRepository.deleteAll();
         facilityInvestmentRepository.deleteAll();
         facilityRepository.deleteAll();
         positionRepository.deleteAll();
