@@ -37,10 +37,6 @@ public class Loan extends Position {
     @JoinColumn(name = "facility_id")
     private Facility facility;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "share_pie_id")
-    private SharePie sharePie;
-
     @PrePersist
     public void prePersist() {
         setType("LOAN");

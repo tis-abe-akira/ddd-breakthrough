@@ -4,7 +4,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.syndicated_loan.syndicated_loan.common.dto.DrawdownDto;
+import com.syndicated_loan.syndicated_loan.common.dto.LoanDto;
 import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
+import com.syndicated_loan.syndicated_loan.common.entity.AmountPie;
 import com.syndicated_loan.syndicated_loan.common.entity.Drawdown;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
 import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
@@ -13,6 +15,7 @@ import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -22,15 +25,19 @@ public class DrawdownService
         extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
 
     private final FacilityService facilityService;
+    private final LoanService loanService; // 追加！
 
     public DrawdownService(
             DrawdownRepository repository,
             AmountPieService amountPieService,
             PositionService positionService,
             FacilityService facilityService,
+            LoanService loanService, // 追加！
             InvestorService investorService) {
         super(repository, amountPieService, positionService, investorService);
         this.facilityService = facilityService;
+        this.loanService = loanService; // 追加！
+
     }
 
     @Override
@@ -40,16 +47,36 @@ public class DrawdownService
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
         entity.setAmount(dto.getDrawdownAmount());
-
-        // 関連するファシリティの設定
+    
+        // Facilityの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
                 .map(facilityService::toEntity)
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
         entity.setRelatedFacility(facility);
-
-        // 関連するPositionとAmountPieの設定
-        setBaseProperties(entity, dto);
-
+    
+        // Loanエンティティの作成と永続化
+        LoanDto loanDto = LoanDto.builder()
+            .amount(dto.getDrawdownAmount())
+            .totalAmount(dto.getDrawdownAmount())
+            .borrowerId(facility.getBorrower().getId())
+            .facilityId(facility.getId())
+            .startDate(LocalDate.now())
+            .endDate(facility.getEndDate())
+            .interestRate(facility.getInterestRate())
+            .build();
+    
+        // Loanを永続化して関連付け
+        LoanDto savedLoan = loanService.create(loanDto);
+        entity.setRelatedPosition(loanService.toEntity(savedLoan));
+    
+        // AmountPieの設定
+        if (dto.getAmountPieId() != null) {
+            AmountPie amountPie = amountPieService.findById(dto.getAmountPieId())
+                .map(amountPieService::toEntity)
+                .orElseThrow(() -> new BusinessException("AmountPie not found", "AMOUNT_PIE_NOT_FOUND"));
+            entity.setAmountPie(amountPie);
+        }
+    
         entity.setDrawdownAmount(dto.getDrawdownAmount());
         entity.setVersion(dto.getVersion());
         return entity;
