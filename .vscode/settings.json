@@ -1,3 +1,9 @@
 {
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "codeReview.codeStandardPath": "c:\\practice\\ddd-breakthrough\\.checklist\\code_standards\\java",
+  "drawDiagrams.promptsPath": "c:\\practice\\ddd-breakthrough\\.checklist\\draw_diagrams",
+  "chat.outputPath": "c:\\practice\\ddd-breakthrough\\.review-results",
+  "editor.fontSize": 16,
+  "terminal.integrated.fontSize": 16,
+  "chat.editor.fontSize": 16
 }
