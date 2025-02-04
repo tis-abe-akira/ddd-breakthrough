@@ -5,6 +5,7 @@ import com.syndicated_loan.syndicated_loan.common.dto.DrawdownDto;
 import com.syndicated_loan.syndicated_loan.common.dto.FacilityDto;
 import com.syndicated_loan.syndicated_loan.common.dto.FacilityInvestmentDto;
 import com.syndicated_loan.syndicated_loan.common.dto.InvestorDto;
+import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 import com.syndicated_loan.syndicated_loan.common.testutil.TestDataBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -312,4 +313,110 @@ public class DrawdownServiceTest {
                 .isEqualByComparingTo(member1InitialInvestment.add(BigDecimal.valueOf(1400000)));
     }
 
+    @Test
+    void testUpdateDrawdownAmount_Success() {
+        // Drawdownを作成
+        DrawdownDto drawdown = new DrawdownDto();
+        drawdown.setRelatedFacilityId(savedFacility1.getId());
+        drawdown.setDrawdownAmount(new BigDecimal("2000000"));
+        drawdown.setDate(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
+        drawdown.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+
+        DrawdownDto savedDrawdown = drawdownService.create(drawdown);
+
+        // 金額を更新
+        BigDecimal newAmount = new BigDecimal("1500000");
+        DrawdownDto updatedDrawdown = drawdownService.updateDrawdownAmount(savedDrawdown.getId(), newAmount);
+
+        // 検証
+        assertThat(updatedDrawdown.getDrawdownAmount()).isEqualByComparingTo(newAmount);
+        assertThat(updatedDrawdown.getAmount()).isEqualByComparingTo(newAmount);
+    }
+
+    @Test
+    void testUpdateDrawdownAmount_ExecutedDrawdown() {
+        // 実行済みのDrawdownを作成
+        DrawdownDto drawdown = new DrawdownDto();
+        drawdown.setRelatedFacilityId(savedFacility1.getId());
+        drawdown.setDrawdownAmount(new BigDecimal("2000000"));
+        drawdown.setDate(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
+        drawdown.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        DrawdownDto savedDrawdown = drawdownService.create(drawdown);
+
+        // ドローダウンを実行
+        drawdownService.executeDrawdown(savedDrawdown.getId());
+
+        // 金額更新を試みる
+        assertThatThrownBy(() -> drawdownService.updateDrawdownAmount(savedDrawdown.getId(), new BigDecimal("1500000")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Cannot update executed drawdown");
+    }
+
+    @Test
+    void testUpdateDrawdownAmount_NegativeAmount() {
+        // Drawdownを作成
+        DrawdownDto drawdown = new DrawdownDto();
+        drawdown.setRelatedFacilityId(savedFacility1.getId());
+        drawdown.setDrawdownAmount(new BigDecimal("2000000"));
+        drawdown.setDate(LocalDateTime.of(2025, 1, 31, 14, 0, 0));
+        drawdown.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        DrawdownDto savedDrawdown = drawdownService.create(drawdown);
+
+        // 負の金額で更新を試みる
+        assertThatThrownBy(() -> drawdownService.updateDrawdownAmount(savedDrawdown.getId(), new BigDecimal("-1000")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("Drawdown amount must be positive");
+    }
+
+    @Test
+    void testFindByDrawdownAmountGreaterThan() {
+        // テストデータを作成
+        DrawdownDto drawdown1 = new DrawdownDto();
+        drawdown1.setRelatedFacilityId(savedFacility1.getId());
+        drawdown1.setDrawdownAmount(new BigDecimal("1000000"));
+        drawdown1.setDate(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
+        drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        drawdownService.create(drawdown1);
+
+        DrawdownDto drawdown2 = new DrawdownDto();
+        drawdown2.setRelatedFacilityId(savedFacility1.getId());
+        drawdown2.setDrawdownAmount(new BigDecimal("2000000"));
+        drawdown2.setDate(LocalDateTime.of(2025, 1, 21, 0, 0, 0));
+        drawdown2.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        drawdownService.create(drawdown2);
+
+        // 検索を実行
+        List<DrawdownDto> result = drawdownService.findByDrawdownAmountGreaterThan(new BigDecimal("1500000"));
+
+        // 検証
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDrawdownAmount()).isGreaterThan(new BigDecimal("1500000"));
+    }
+
+    @Test
+    void testFindByRelatedFacilityAndDrawdownAmountGreaterThan() {
+        // テストデータを作成
+        DrawdownDto drawdown1 = new DrawdownDto();
+        drawdown1.setRelatedFacilityId(savedFacility1.getId());
+        drawdown1.setDrawdownAmount(new BigDecimal("1000000"));
+        drawdown1.setDate(LocalDateTime.of(2025, 1, 20, 0, 0, 0));
+        drawdown1.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        drawdownService.create(drawdown1);
+
+        DrawdownDto drawdown2 = new DrawdownDto();
+        drawdown2.setRelatedFacilityId(savedFacility1.getId());
+        drawdown2.setDrawdownAmount(new BigDecimal("2000000"));
+        drawdown2.setDate(LocalDateTime.of(2025, 1, 21, 0, 0, 0));
+        drawdown2.setRelatedPositionId(savedFacilityInvestment1.getRelatedPositionId());
+        drawdownService.create(drawdown2);
+
+        // 検索を実行
+        List<DrawdownDto> result = drawdownService.findByRelatedFacilityAndDrawdownAmountGreaterThan(
+                savedFacility1.getId(), new BigDecimal("1500000"));
+
+        // 検証
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getDrawdownAmount()).isGreaterThan(new BigDecimal("1500000"));
+        assertThat(result.get(0).getRelatedFacilityId()).isEqualTo(savedFacility1.getId());
+    }
 }
