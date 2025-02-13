@@ -24,6 +24,7 @@ public class LoanDto {
     private Long facilityId;
     private Long sharePieId;
     private Long version;
+    private Integer term; // 追加！期間（月数）
 
     // レスポンス用の追加フィールド
     private BorrowerDto borrower;

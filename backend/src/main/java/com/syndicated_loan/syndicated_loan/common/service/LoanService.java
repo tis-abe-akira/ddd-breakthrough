@@ -9,7 +9,9 @@ import com.syndicated_loan.syndicated_loan.common.entity.Loan;
 import com.syndicated_loan.syndicated_loan.common.entity.Borrower;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
 import com.syndicated_loan.syndicated_loan.common.entity.SharePie;
+import com.syndicated_loan.syndicated_loan.common.entity.RepaymentSchedule;
 import com.syndicated_loan.syndicated_loan.common.repository.LoanRepository;
+import com.syndicated_loan.syndicated_loan.common.repository.RepaymentScheduleRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.math.RoundingMode;
 
 @Slf4j
 @Service
@@ -26,16 +30,19 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
     private final BorrowerService borrowerService;
     private final FacilityService facilityService;
     private final SharePieService sharePieService;
+    private final RepaymentScheduleRepository repaymentScheduleRepository;
 
     public LoanService(
             LoanRepository repository,
             BorrowerService borrowerService,
             FacilityService facilityService,
-            SharePieService sharePieService) {
+            SharePieService sharePieService,
+            RepaymentScheduleRepository repaymentScheduleRepository) {
         super(repository);
         this.borrowerService = borrowerService;
         this.facilityService = facilityService;
         this.sharePieService = sharePieService;
+        this.repaymentScheduleRepository = repaymentScheduleRepository;
     }
 
     @Override
@@ -52,6 +59,7 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         entity.setTotalAmount(dto.getTotalAmount());
         entity.setStartDate(dto.getStartDate());
         entity.setEndDate(dto.getEndDate());
+        entity.setTerm(dto.getTerm());  // termも設定！
         entity.setInterestRate(dto.getInterestRate());
 
         // 借り手の設定
@@ -77,7 +85,6 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         }
 
         // availableAmountの設定を追加（初期値は設定時の金額と同じ）
-        // entity.setAvailableAmount(dto.getAmount());
         entity.setAvailableAmount(dto.getTotalAmount());
 
         entity.setVersion(dto.getVersion());
@@ -94,6 +101,7 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .borrowerId(entity.getBorrower().getId())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
+                .term(entity.getTerm())  // termを追加！
                 .interestRate(entity.getInterestRate())
                 .facilityId(entity.getFacility() != null ? entity.getFacility().getId() : null)
                 .sharePieId(entity.getSharePie() != null ? entity.getSharePie().getId() : null)
@@ -162,5 +170,44 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         loan.setSharePie(sharePie);
 
         return toDto(repository.save(loan));
+    }
+
+    public void generateRepaymentSchedules(Loan loan) {
+        // 元本一括返済の場合
+        RepaymentSchedule principalSchedule = new RepaymentSchedule();
+        principalSchedule.setLoan(loan);
+        principalSchedule.setScheduledDate(loan.getEndDate());
+        principalSchedule.setPrincipalAmount(loan.getTotalAmount());
+        principalSchedule.setPaymentType(RepaymentSchedule.PaymentType.PRINCIPAL);
+        loan.addRepaymentSchedule(principalSchedule);
+
+        // 利息は3ヶ月ごとに支払い
+        LocalDate currentDate = loan.getStartDate();
+        while (currentDate.isBefore(loan.getEndDate())) {
+            LocalDate nextPaymentDate = currentDate.plusMonths(3);
+            if (nextPaymentDate.isAfter(loan.getEndDate())) {
+                nextPaymentDate = loan.getEndDate();
+            }
+
+            RepaymentSchedule interestSchedule = new RepaymentSchedule();
+            interestSchedule.setLoan(loan);
+            interestSchedule.setScheduledDate(nextPaymentDate);
+            // 年利を日割り計算して3ヶ月分の利息を計算
+            BigDecimal daysInPeriod = BigDecimal.valueOf(ChronoUnit.DAYS.between(currentDate, nextPaymentDate));
+            BigDecimal yearlyInterest = loan.getTotalAmount()
+                .multiply(loan.getInterestRate())
+                .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP);
+            BigDecimal periodInterest = yearlyInterest
+                .multiply(daysInPeriod)
+                .divide(BigDecimal.valueOf(365), 4, RoundingMode.HALF_UP);
+            
+            interestSchedule.setInterestAmount(periodInterest);
+            interestSchedule.setPaymentType(RepaymentSchedule.PaymentType.INTEREST);
+            loan.addRepaymentSchedule(interestSchedule);
+
+            currentDate = nextPaymentDate;
+        }
+
+        repository.save(loan);
     }
 }
