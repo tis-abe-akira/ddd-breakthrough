@@ -9,6 +9,7 @@ import com.syndicated_loan.syndicated_loan.common.dto.AmountPieDto;
 import com.syndicated_loan.syndicated_loan.common.entity.AmountPie;
 import com.syndicated_loan.syndicated_loan.common.entity.Drawdown;
 import com.syndicated_loan.syndicated_loan.common.entity.Facility;
+import com.syndicated_loan.syndicated_loan.common.entity.Loan;
 import com.syndicated_loan.syndicated_loan.common.repository.DrawdownRepository;
 import com.syndicated_loan.syndicated_loan.common.exception.BusinessException;
 
@@ -17,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.math.RoundingMode;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @Service
@@ -62,6 +65,7 @@ public class DrawdownService
             .facilityId(facility.getId())
             .startDate(LocalDate.now())
             .endDate(facility.getEndDate())
+            .term((int) ChronoUnit.MONTHS.between(LocalDate.now(), facility.getEndDate()))  // termを追加！
             .interestRate(facility.getInterestRate())
             .build();
     
@@ -111,8 +115,8 @@ public class DrawdownService
         dto.setRemainingFacilityAmount(facility.getAvailableAmount());
         if (facility.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal utilizationRate = BigDecimal.ONE
-                    .subtract(facility.getAvailableAmount().divide(facility.getTotalAmount(), 4,
-                            BigDecimal.ROUND_HALF_UP))
+                    .subtract(facility.getAvailableAmount()
+                            .divide(facility.getTotalAmount(), 4, RoundingMode.HALF_UP))
                     .multiply(new BigDecimal("100"));
             dto.setUtilizationRate(utilizationRate);
         }
@@ -208,7 +212,14 @@ public class DrawdownService
         }
 
         // 基底クラスのcreateを呼び出し
-        return super.create(dto);
+        DrawdownDto createdDto = super.create(dto);
+
+        // 返済スケジュールの生成
+        Drawdown drawdown = repository.findById(createdDto.getId())
+            .orElseThrow(() -> new BusinessException("Drawdown not found", "DRAWDOWN_NOT_FOUND"));
+        loanService.generateRepaymentSchedules((Loan)drawdown.getRelatedPosition());
+
+        return createdDto;
     }
 
     @Override
