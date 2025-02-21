@@ -21,6 +21,11 @@ import java.util.List;
 import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * シンジケートローンにおけるドローダウン（融資実行）を管理するサービスクラス。
+ * ドローダウンの作成、実行、金額更新、および関連する融資（Loan）の生成を担当します。
+ * ファシリティの利用可能額の管理や投資家への配分も処理します。
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -28,21 +33,39 @@ public class DrawdownService
         extends TransactionService<Drawdown, DrawdownDto, DrawdownRepository> {
 
     private final FacilityService facilityService;
-    private final LoanService loanService; // 追加！
+    private final LoanService loanService;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository リポジトリインスタンス
+     * @param amountPieService 金額配分サービス
+     * @param positionService ポジションサービス
+     * @param facilityService ファシリティサービス
+     * @param loanService ローンサービス
+     * @param investorService 投資家サービス
+     */
     public DrawdownService(
             DrawdownRepository repository,
             AmountPieService amountPieService,
             PositionService positionService,
             FacilityService facilityService,
-            LoanService loanService, // 追加！
+            LoanService loanService,
             InvestorService investorService) {
         super(repository, amountPieService, positionService, investorService);
         this.facilityService = facilityService;
-        this.loanService = loanService; // 追加！
-
+        this.loanService = loanService;
     }
 
+    /**
+     * DTOをエンティティに変換します。
+     * ドローダウンの基本情報設定に加えて、関連するファシリティの検証、
+     * 新規ローンの作成と永続化も行います。
+     * 
+     * @param dto 変換元のDTO
+     * @return 変換されたドローダウンエンティティ
+     * @throws BusinessException ファシリティが存在しない場合
+     */
     @Override
     public Drawdown toEntity(DrawdownDto dto) {
         Drawdown entity = new Drawdown();
@@ -51,13 +74,11 @@ public class DrawdownService
         entity.setDate(dto.getDate());
         entity.setAmount(dto.getDrawdownAmount());
     
-        // Facilityの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
                 .map(facilityService::toEntity)
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
         entity.setRelatedFacility(facility);
     
-        // Loanエンティティの作成と永続化
         LoanDto loanDto = LoanDto.builder()
             .amount(dto.getDrawdownAmount())
             .totalAmount(dto.getDrawdownAmount())
@@ -65,15 +86,13 @@ public class DrawdownService
             .facilityId(facility.getId())
             .startDate(LocalDate.now())
             .endDate(facility.getEndDate())
-            .term((int) ChronoUnit.MONTHS.between(LocalDate.now(), facility.getEndDate()))  // termを追加！
+            .term((int) ChronoUnit.MONTHS.between(LocalDate.now(), facility.getEndDate()))
             .interestRate(facility.getInterestRate())
             .build();
     
-        // Loanを永続化して関連付け
         LoanDto savedLoan = loanService.create(loanDto);
         entity.setRelatedPosition(loanService.toEntity(savedLoan));
     
-        // AmountPieの設定
         if (dto.getAmountPieId() != null) {
             AmountPie amountPie = amountPieService.findById(dto.getAmountPieId())
                 .map(amountPieService::toEntity)
@@ -86,6 +105,14 @@ public class DrawdownService
         return entity;
     }
 
+    /**
+     * エンティティをDTOに変換します。
+     * ドローダウンの基本情報に加えて、ファシリティの残額や利用率などの
+     * 計算された情報も設定します。
+     * 
+     * @param entity 変換元のエンティティ
+     * @return 変換されたドローダウンDTO
+     */
     @Override
     public DrawdownDto toDto(Drawdown entity) {
         DrawdownDto dto = DrawdownDto.builder()
@@ -101,16 +128,13 @@ public class DrawdownService
                 .version(entity.getVersion())
                 .build();
 
-        // レスポンス用の追加情報
         setBaseDtoProperties(dto, entity);
         dto.setRelatedFacility(facilityService.toDto(entity.getRelatedFacility()));
 
-        // AmountPieの情報も設定
         if (entity.getAmountPie() != null) {
             dto.setAmountPie(amountPieService.toDto(entity.getAmountPie()));
         }
 
-        // 残額と利用率の計算
         Facility facility = entity.getRelatedFacility();
         dto.setRemainingFacilityAmount(facility.getAvailableAmount());
         if (facility.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
@@ -124,7 +148,13 @@ public class DrawdownService
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 指定されたファシリティに関連するドローダウンを検索します。
+     * 
+     * @param facilityId ファシリティID
+     * @return ドローダウンのDTOリスト
+     * @throws BusinessException ファシリティが存在しない場合
+     */
     public List<DrawdownDto> findByRelatedFacility(Long facilityId) {
         Facility facility = facilityService.findById(facilityId)
                 .map(facilityService::toEntity)
@@ -134,12 +164,26 @@ public class DrawdownService
                 .toList();
     }
 
+    /**
+     * 指定された金額より大きいドローダウンを検索します。
+     * 
+     * @param amount 基準となる金額
+     * @return 条件を満たすドローダウンのDTOリスト
+     */
     public List<DrawdownDto> findByDrawdownAmountGreaterThan(BigDecimal amount) {
         return repository.findByDrawdownAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定されたファシリティに関連し、かつ指定された金額より大きいドローダウンを検索します。
+     * 
+     * @param facilityId ファシリティID
+     * @param amount 基準となる金額
+     * @return 条件を満たすドローダウンのDTOリスト
+     * @throws BusinessException ファシリティが存在しない場合
+     */
     public List<DrawdownDto> findByRelatedFacilityAndDrawdownAmountGreaterThan(Long facilityId, BigDecimal amount) {
         Facility facility = facilityService.findById(facilityId)
                 .map(facilityService::toEntity)
@@ -149,7 +193,16 @@ public class DrawdownService
                 .toList();
     }
 
-    // ドローダウン実行（ファシリティの利用可能額も更新）
+    /**
+     * ドローダウンを実行します。
+     * ファシリティの利用可能額を更新し、投資家の現在の投資額も更新します。
+     * 
+     * @param drawdownId ドローダウンID
+     * @return 更新されたドローダウンのDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - ドローダウンが存在しない場合（DRAWDOWN_NOT_FOUND）
+     *                          - 利用可能額が不足している場合（INSUFFICIENT_AVAILABLE_AMOUNT）
+     */
     @Transactional
     public DrawdownDto executeDrawdown(Long drawdownId) {
         Drawdown drawdown = repository.findById(drawdownId)
@@ -162,22 +215,30 @@ public class DrawdownService
             throw new BusinessException("Insufficient available amount", "INSUFFICIENT_AVAILABLE_AMOUNT");
         }
 
-        // ファシリティの利用可能額を更新
         facilityService.updateAvailableAmount(facility.getId(), newAvailableAmount);
 
-        // 投資家の現在の投資額を更新（増額）
-        // AmountPieエンティティをDTOに変換してから渡す
         AmountPieDto amountPieDto = amountPieService.toDto(drawdown.getAmountPie());
         updateInvestorCurrentInvestments(amountPieDto, BigDecimal.ONE);
 
-        // ドローダウンのステータスを更新
         drawdown.setStatus("EXECUTED");
         drawdown.setProcessedDate(java.time.LocalDateTime.now());
 
         return toDto(repository.save(drawdown));
     }
 
-    // ドローダウン金額の更新（実行前のみ可能）
+    /**
+     * ドローダウン金額を更新します。
+     * 実行済みのドローダウンは更新できません。
+     * 
+     * @param drawdownId ドローダウンID
+     * @param newAmount 新しいドローダウン金額
+     * @return 更新されたドローダウンのDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - ドローダウンが存在しない場合（DRAWDOWN_NOT_FOUND）
+     *                          - すでに実行済みの場合（DRAWDOWN_ALREADY_EXECUTED）
+     *                          - 金額が0以下の場合（INVALID_DRAWDOWN_AMOUNT）
+     *                          - 利用可能額が不足している場合（INSUFFICIENT_AVAILABLE_AMOUNT）
+     */
     @Transactional
     public DrawdownDto updateDrawdownAmount(Long drawdownId, BigDecimal newAmount) {
         Drawdown drawdown = repository.findById(drawdownId)
@@ -197,24 +258,28 @@ public class DrawdownService
         }
 
         drawdown.setDrawdownAmount(newAmount);
-        drawdown.setAmount(newAmount); // 取引金額も更新
+        drawdown.setAmount(newAmount);
 
         return toDto(repository.save(drawdown));
     }
 
+    /**
+     * ドローダウンを作成し、関連する返済スケジュールを生成します。
+     * 
+     * @param dto 作成するドローダウンのDTO
+     * @return 作成されたドローダウンのDTO
+     * @throws BusinessException AmountPieの作成に失敗した場合
+     */
     @Override
     @Transactional
     public DrawdownDto create(DrawdownDto dto) {
-        // AmountPieの生成
         if (dto.getAmountPie() != null) {
             var amountPie = amountPieService.create(dto.getAmountPie());
             dto.setAmountPieId(amountPie.getId());
         }
 
-        // 基底クラスのcreateを呼び出し
         DrawdownDto createdDto = super.create(dto);
 
-        // 返済スケジュールの生成
         Drawdown drawdown = repository.findById(createdDto.getId())
             .orElseThrow(() -> new BusinessException("Drawdown not found", "DRAWDOWN_NOT_FOUND"));
         loanService.generateRepaymentSchedules((Loan)drawdown.getRelatedPosition());
@@ -222,29 +287,32 @@ public class DrawdownService
         return createdDto;
     }
 
+    /**
+     * ドローダウンを更新し、必要に応じてAmountPieも更新します。
+     * 
+     * @param id 更新対象のドローダウンID
+     * @param dto 更新内容を含むDTO
+     * @return 更新されたドローダウンのDTO
+     * @throws BusinessException ドローダウンが存在しない場合
+     */
     @Override
     @Transactional
     public DrawdownDto update(Long id, DrawdownDto dto) {
-        // AmountPieの更新
         if (dto.getAmountPie() != null) {
-            // 既存のAmountPieを取得
             Drawdown existingDrawdown = repository.findById(id)
                     .orElseThrow(() -> new BusinessException("Drawdown not found", "DRAWDOWN_NOT_FOUND"));
 
             if (existingDrawdown.getAmountPie() != null) {
-                // 既存のAmountPieを更新
                 var updatedAmountPie = amountPieService.update(
                         existingDrawdown.getAmountPie().getId(),
                         dto.getAmountPie());
                 dto.setAmountPieId(updatedAmountPie.getId());
             } else {
-                // 新しいAmountPieを作成
                 var newAmountPie = amountPieService.create(dto.getAmountPie());
                 dto.setAmountPieId(newAmountPie.getId());
             }
         }
 
-        // 基底クラスのupdateを呼び出し
         return super.update(id, dto);
     }
 }

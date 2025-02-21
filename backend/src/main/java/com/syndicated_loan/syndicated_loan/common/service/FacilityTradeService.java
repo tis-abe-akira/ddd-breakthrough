@@ -14,6 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * シンジケートローンにおけるファシリティの売買取引（FacilityTrade）を管理するサービスクラス。
+ * 投資家間のファシリティ持分の売買処理、取引金額の管理、取引シェアの計算などの機能を提供します。
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -23,6 +27,15 @@ public class FacilityTradeService
     private final InvestorService investorService;
     private final FacilityService facilityService;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository リポジトリインスタンス
+     * @param amountPieService 金額配分サービス
+     * @param positionService ポジションサービス
+     * @param investorService 投資家サービス
+     * @param facilityService ファシリティサービス
+     */
     public FacilityTradeService(
             FacilityTradeRepository repository,
             AmountPieService amountPieService,
@@ -34,6 +47,16 @@ public class FacilityTradeService
         this.facilityService = facilityService;
     }
 
+    /**
+     * DTOをエンティティに変換します。
+     * 売り手・買い手の投資家情報の検証と設定も行います。
+     * 
+     * @param dto 変換元のDTO
+     * @return 変換されたファシリティ取引エンティティ
+     * @throws BusinessException 以下の場合に発生:
+     *                          - 売り手が存在しない場合（SELLER_NOT_FOUND）
+     *                          - 買い手が存在しない場合（BUYER_NOT_FOUND）
+     */
     @Override
     public FacilityTrade toEntity(FacilityTradeDto dto) {
         FacilityTrade entity = new FacilityTrade();
@@ -42,26 +65,29 @@ public class FacilityTradeService
         entity.setDate(dto.getDate());
         entity.setAmount(dto.getAmount());
 
-        // 売り手の設定
         Investor seller = investorService.findById(dto.getSellerId())
                 .map(investorService::toEntity)
                 .orElseThrow(() -> new BusinessException("Seller not found", "SELLER_NOT_FOUND"));
         entity.setSeller(seller);
 
-        // 買い手の設定
         Investor buyer = investorService.findById(dto.getBuyerId())
                 .map(investorService::toEntity)
                 .orElseThrow(() -> new BusinessException("Buyer not found", "BUYER_NOT_FOUND"));
         entity.setBuyer(buyer);
 
-        // 関連するPositionとAmountPieの設定
         setBaseProperties(entity, dto);
-
         entity.setTradeAmount(dto.getTradeAmount());
         entity.setVersion(dto.getVersion());
         return entity;
     }
 
+    /**
+     * エンティティをDTOに変換します。
+     * 取引シェアの計算や関連する投資家情報の設定も行います。
+     * 
+     * @param entity 変換元のエンティティ
+     * @return 変換されたファシリティ取引DTO
+     */
     @Override
     public FacilityTradeDto toDto(FacilityTrade entity) {
         FacilityTradeDto dto = FacilityTradeDto.builder()
@@ -77,12 +103,10 @@ public class FacilityTradeService
                 .version(entity.getVersion())
                 .build();
 
-        // レスポンス用の追加情報
         setBaseDtoProperties(dto, entity);
         dto.setSeller(investorService.toDto(entity.getSeller()));
         dto.setBuyer(investorService.toDto(entity.getBuyer()));
 
-        // 取引シェアの計算
         if (entity.getRelatedPosition() != null && 
             entity.getRelatedPosition().getAmount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal tradeShare = entity.getTradeAmount()
@@ -94,7 +118,13 @@ public class FacilityTradeService
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 指定された売り手の全ての取引を検索します。
+     * 
+     * @param sellerId 売り手の投資家ID
+     * @return 売り手の取引のDTOリスト
+     * @throws BusinessException 売り手が存在しない場合（SELLER_NOT_FOUND）
+     */
     public List<FacilityTradeDto> findBySeller(Long sellerId) {
         Investor seller = investorService.findById(sellerId)
                 .map(investorService::toEntity)
@@ -104,6 +134,13 @@ public class FacilityTradeService
                 .toList();
     }
 
+    /**
+     * 指定された買い手の全ての取引を検索します。
+     * 
+     * @param buyerId 買い手の投資家ID
+     * @return 買い手の取引のDTOリスト
+     * @throws BusinessException 買い手が存在しない場合（BUYER_NOT_FOUND）
+     */
     public List<FacilityTradeDto> findByBuyer(Long buyerId) {
         Investor buyer = investorService.findById(buyerId)
                 .map(investorService::toEntity)
@@ -113,12 +150,25 @@ public class FacilityTradeService
                 .toList();
     }
 
+    /**
+     * 指定された金額より大きい取引を検索します。
+     * 
+     * @param amount 基準となる金額
+     * @return 条件を満たす取引のDTOリスト
+     */
     public List<FacilityTradeDto> findByTradeAmountGreaterThan(BigDecimal amount) {
         return repository.findByTradeAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された投資家が売り手または買い手として関与した全ての取引を検索します。
+     * 
+     * @param investorId 投資家ID
+     * @return 投資家が関与した取引のDTOリスト
+     * @throws BusinessException 投資家が存在しない場合（INVESTOR_NOT_FOUND）
+     */
     public List<FacilityTradeDto> findBySellerOrBuyer(Long investorId) {
         Investor investor = investorService.findById(investorId)
                 .map(investorService::toEntity)
@@ -128,7 +178,16 @@ public class FacilityTradeService
                 .toList();
     }
 
-    // 取引金額の更新
+    /**
+     * 取引金額を更新します。
+     * 
+     * @param tradeId 取引ID
+     * @param newAmount 新しい取引金額
+     * @return 更新された取引のDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - 取引が存在しない場合（TRADE_NOT_FOUND）
+     *                          - 金額が0以下の場合（INVALID_TRADE_AMOUNT）
+     */
     @Transactional
     public FacilityTradeDto updateTradeAmount(Long tradeId, BigDecimal newAmount) {
         FacilityTrade trade = repository.findById(tradeId)
@@ -139,7 +198,7 @@ public class FacilityTradeService
         }
 
         trade.setTradeAmount(newAmount);
-        trade.setAmount(newAmount); // 取引金額も更新
+        trade.setAmount(newAmount);
 
         return toDto(repository.save(trade));
     }

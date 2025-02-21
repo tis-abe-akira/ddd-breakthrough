@@ -18,6 +18,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * シンジケートローンにおけるファシリティ（与信枠）を管理するサービスクラス。
+ * ファシリティの作成、更新、利用可能額の管理、シェア配分の設定などの機能を提供します。
+ * 借入人、シンジケート団との関連付けも管理します。
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -27,6 +32,14 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
     private final SharePieService sharePieService;
     private final BorrowerService borrowerService;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository リポジトリインスタンス
+     * @param syndicateService シンジケート団サービス
+     * @param sharePieService シェア配分サービス
+     * @param borrowerService 借入人サービス
+     */
     public FacilityService(
             FacilityRepository repository,
             SyndicateService syndicateService,
@@ -43,13 +56,23 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         entity.setId(id);
     }
 
+    /**
+     * DTOをエンティティに変換します。
+     * 必須項目のバリデーション、関連エンティティの設定、
+     * 既定値の設定なども行います。
+     * 
+     * @param dto 変換元のDTO
+     * @return 変換されたファシリティエンティティ
+     * @throws BusinessException 以下の場合に発生:
+     *                          - 必須項目が未設定の場合（各種_REQUIRED）
+     *                          - 関連エンティティが存在しない場合（各種_NOT_FOUND）
+     */
     @Override
     public Facility toEntity(FacilityDto dto) {
         Facility entity = new Facility();
         entity.setId(dto.getId());
         entity.setType("FACILITY");
 
-        // 必須項目のバリデーション
         if (dto.getTotalAmount() == null) {
             throw new BusinessException("Total amount cannot be null", "TOTAL_AMOUNT_REQUIRED");
         }
@@ -62,7 +85,6 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
             entity.setAvailableAmount(dto.getAvailableAmount());
         }
 
-        // 日付関連の設定
         if (dto.getStartDate() == null) {
             entity.setStartDate(LocalDate.now());
         } else {
@@ -80,26 +102,22 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         }
         entity.setInterestRate(dto.getInterestRate());
 
-        // シンジケート団の設定
         Syndicate syndicate = syndicateService.findById(dto.getSyndicateId())
                 .map(syndicateService::toEntity)
                 .orElseThrow(() -> new BusinessException("Syndicate not found", "SYNDICATE_NOT_FOUND"));
         entity.setSyndicate(syndicate);
 
-        // シェアパイの設定
         if (dto.getSharePieId() != null) {
             SharePie sharePie = sharePieService.getRepository().getReferenceById(dto.getSharePieId());
             entity.setSharePie(sharePie);
         }
 
         if (dto.getBorrowerId() == null && dto.getId() != null) {
-            // 既存のFacilityからborrowerIdを取得
             Facility existingFacility = repository.findById(dto.getId())
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
             dto.setBorrowerId(existingFacility.getBorrower().getId());
         }
 
-        // borrowerの設定
         if (dto.getBorrowerId() == null) {
             throw new BusinessException("Borrower ID cannot be null", "BORROWER_REQUIRED");
         }
@@ -112,6 +130,13 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         return entity;
     }
 
+    /**
+     * エンティティをDTOに変換します。
+     * シンジケート団情報、シェア配分情報、利用率なども設定します。
+     * 
+     * @param entity 変換元のエンティティ
+     * @return 変換されたファシリティDTO
+     */
     @Override
     public FacilityDto toDto(Facility entity) {
         FacilityDto dto = FacilityDto.builder()
@@ -127,13 +152,11 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
                 .version(entity.getVersion())
                 .build();
 
-        // レスポンス用の追加情報
         dto.setSyndicate(syndicateService.toDto(entity.getSyndicate()));
         if (entity.getSharePie() != null) {
             dto.setSharePie(sharePieService.toDto(entity.getSharePie()));
         }
 
-        // 利用率の計算
         if (entity.getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal utilizationRate = entity.getAvailableAmount()
                     .divide(entity.getTotalAmount(), 4, BigDecimal.ROUND_HALF_UP)
@@ -144,7 +167,13 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 指定されたシンジケート団に関連する全てのファシリティを検索します。
+     * 
+     * @param syndicateId シンジケート団ID
+     * @return ファシリティのDTOリスト
+     * @throws BusinessException シンジケート団が存在しない場合（SYNDICATE_NOT_FOUND）
+     */
     public List<FacilityDto> findBySyndicate(Long syndicateId) {
         Syndicate syndicate = syndicateService.findById(syndicateId)
                 .map(syndicateService::toEntity)
@@ -154,25 +183,53 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
                 .toList();
     }
 
+    /**
+     * 指定された総額より大きいファシリティを検索します。
+     * 
+     * @param amount 基準となる金額
+     * @return 条件を満たすファシリティのDTOリスト
+     */
     public List<FacilityDto> findByTotalAmountGreaterThan(BigDecimal amount) {
         return repository.findByTotalAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された日付より後に終了するファシリティを検索します。
+     * 
+     * @param date 基準となる日付
+     * @return 条件を満たすファシリティのDTOリスト
+     */
     public List<FacilityDto> findByEndDateAfter(LocalDate date) {
         return repository.findByEndDateAfter(date).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された金額より大きい利用可能額を持つファシリティを検索します。
+     * 
+     * @param amount 基準となる金額
+     * @return 条件を満たすファシリティのDTOリスト
+     */
     public List<FacilityDto> findByAvailableAmountGreaterThan(BigDecimal amount) {
         return repository.findByAvailableAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
-    // ファシリティの利用可能額を更新
+    /**
+     * ファシリティの利用可能額を更新します。
+     * 
+     * @param facilityId ファシリティID
+     * @param newAvailableAmount 新しい利用可能額
+     * @return 更新されたファシリティのDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - ファシリティが存在しない場合（FACILITY_NOT_FOUND）
+     *                          - 利用可能額が負の値の場合（INVALID_AVAILABLE_AMOUNT）
+     *                          - 利用可能額が総額を超える場合（INVALID_AVAILABLE_AMOUNT）
+     */
     @Transactional
     public FacilityDto updateAvailableAmount(Long facilityId, BigDecimal newAvailableAmount) {
         Facility facility = repository.findById(facilityId)
@@ -190,16 +247,23 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         return toDto(repository.save(facility));
     }
 
-    // シェアパイの更新
+    /**
+     * ファシリティのシェア配分を更新します。
+     * 
+     * @param facilityId ファシリティID
+     * @param sharePieDto 新しいシェア配分DTO
+     * @return 更新されたファシリティのDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - ファシリティが存在しない場合（FACILITY_NOT_FOUND）
+     *                          - シェア配分が存在しない場合（SHARE_PIE_NOT_FOUND）
+     */
     @Transactional
     public FacilityDto updateSharePie(Long facilityId, SharePieDto sharePieDto) {
         Facility facility = repository.findById(facilityId)
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
 
-        // 既存のSharePieを取得または新規作成
         SharePie sharePie;
         if (sharePieDto.getId() != null) {
-            // 既存のSharePieを更新
             sharePie = sharePieService.findById(sharePieDto.getId())
                     .map(dto -> {
                         SharePie entity = sharePieService.toEntity(sharePieDto);
@@ -208,7 +272,6 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
                     })
                     .orElseThrow(() -> new BusinessException("SharePie not found", "SHARE_PIE_NOT_FOUND"));
         } else {
-            // 新規SharePieを作成
             sharePie = sharePieService.toEntity(sharePieDto);
             sharePie = sharePieService.getRepository().save(sharePie);
         }
