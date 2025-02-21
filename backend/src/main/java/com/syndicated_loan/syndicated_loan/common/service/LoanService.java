@@ -22,6 +22,11 @@ import java.util.List;
 import java.time.temporal.ChronoUnit;
 import java.math.RoundingMode;
 
+/**
+ * シンジケートローンにおけるローン（Loan）を管理するサービスクラス。
+ * ローンの基本情報管理、返済スケジュールの生成、シェア配分の設定などの機能を提供します。
+ * 元本一括返済と3ヶ月ごとの利息支払いスケジュールを自動生成します。
+ */
 @Slf4j
 @Service
 @Transactional
@@ -32,6 +37,15 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
     private final SharePieService sharePieService;
     private final RepaymentScheduleRepository repaymentScheduleRepository;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository リポジトリインスタンス
+     * @param borrowerService 借入人サービス
+     * @param facilityService ファシリティサービス
+     * @param sharePieService シェア配分サービス
+     * @param repaymentScheduleRepository 返済スケジュールリポジトリ
+     */
     public LoanService(
             LoanRepository repository,
             BorrowerService borrowerService,
@@ -50,6 +64,17 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         entity.setId(id);
     }
 
+    /**
+     * DTOをエンティティに変換します。
+     * 借入人、ファシリティ、シェア配分の検証と設定も行います。
+     * 
+     * @param dto 変換元のDTO
+     * @return 変換されたローンエンティティ
+     * @throws BusinessException 以下の場合に発生:
+     *                          - 借入人が存在しない場合（BORROWER_NOT_FOUND）
+     *                          - ファシリティが存在しない場合（FACILITY_NOT_FOUND）
+     *                          - シェア配分が存在しない場合（SHARE_PIE_NOT_FOUND）
+     */
     @Override
     public Loan toEntity(LoanDto dto) {
         Loan entity = new Loan();
@@ -59,16 +84,14 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         entity.setTotalAmount(dto.getTotalAmount());
         entity.setStartDate(dto.getStartDate());
         entity.setEndDate(dto.getEndDate());
-        entity.setTerm(dto.getTerm());  // termも設定！
+        entity.setTerm(dto.getTerm());
         entity.setInterestRate(dto.getInterestRate());
 
-        // 借り手の設定
         Borrower borrower = borrowerService.findById(dto.getBorrowerId())
                 .map(borrowerService::toEntity)
                 .orElseThrow(() -> new BusinessException("Borrower not found", "BORROWER_NOT_FOUND"));
         entity.setBorrower(borrower);
 
-        // ファシリティの設定
         if (dto.getFacilityId() != null) {
             Facility facility = facilityService.findById(dto.getFacilityId())
                     .map(facilityService::toEntity)
@@ -76,7 +99,6 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             entity.setFacility(facility);
         }
 
-        // シェアパイの設定を修正
         if (dto.getSharePieId() != null) {
             SharePie sharePie = sharePieService.findById(dto.getSharePieId())
                     .map(sharePieService::toEntity)
@@ -84,13 +106,18 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             entity.setSharePie(sharePie);
         }
 
-        // availableAmountの設定を追加（初期値は設定時の金額と同じ）
         entity.setAvailableAmount(dto.getTotalAmount());
-
         entity.setVersion(dto.getVersion());
         return entity;
     }
 
+    /**
+     * エンティティをDTOに変換します。
+     * 関連する借入人、ファシリティ、シェア配分の情報も設定します。
+     * 
+     * @param entity 変換元のエンティティ
+     * @return 変換されたローンDTO
+     */
     @Override
     public LoanDto toDto(Loan entity) {
         LoanDto dto = LoanDto.builder()
@@ -101,14 +128,13 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .borrowerId(entity.getBorrower().getId())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
-                .term(entity.getTerm())  // termを追加！
+                .term(entity.getTerm())
                 .interestRate(entity.getInterestRate())
                 .facilityId(entity.getFacility() != null ? entity.getFacility().getId() : null)
                 .sharePieId(entity.getSharePie() != null ? entity.getSharePie().getId() : null)
                 .version(entity.getVersion())
                 .build();
 
-        // レスポンス用の追加情報
         dto.setBorrower(borrowerService.toDto(entity.getBorrower()));
         if (entity.getFacility() != null) {
             dto.setFacility(facilityService.toDto(entity.getFacility()));
@@ -117,13 +143,16 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             dto.setSharePie(sharePieService.toDto(entity.getSharePie()));
         }
 
-        // TODO: 残額、返済済み金額、次回支払日、次回支払額の計算
-        // これらの値は取引履歴から計算する必要があり、TransactionServiceが必要
-
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 指定された借入人のローンを検索します。
+     * 
+     * @param borrowerId 借入人ID
+     * @return ローンのDTOリスト
+     * @throws BusinessException 借入人が存在しない場合（BORROWER_NOT_FOUND）
+     */
     public List<LoanDto> findByBorrower(Long borrowerId) {
         Borrower borrower = borrowerService.findById(borrowerId)
                 .map(borrowerService::toEntity)
@@ -133,6 +162,13 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .toList();
     }
 
+    /**
+     * 指定されたファシリティのローンを検索します。
+     * 
+     * @param facilityId ファシリティID
+     * @return ローンのDTOリスト
+     * @throws BusinessException ファシリティが存在しない場合（FACILITY_NOT_FOUND）
+     */
     public List<LoanDto> findByFacility(Long facilityId) {
         Facility facility = facilityService.findById(facilityId)
                 .map(facilityService::toEntity)
@@ -142,25 +178,51 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .toList();
     }
 
+    /**
+     * 指定された金額より大きい総額を持つローンを検索します。
+     * 
+     * @param amount 基準となる金額
+     * @return 条件を満たすローンのDTOリスト
+     */
     public List<LoanDto> findByTotalAmountGreaterThan(BigDecimal amount) {
         return repository.findByTotalAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された期間内に開始するローンを検索します。
+     * 
+     * @param startDate 期間開始日
+     * @param endDate 期間終了日
+     * @return 条件を満たすローンのDTOリスト
+     */
     public List<LoanDto> findByStartDateBetween(LocalDate startDate, LocalDate endDate) {
         return repository.findByStartDateBetween(startDate, endDate).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された日付より後に終了するローンを検索します。
+     * 
+     * @param date 基準となる日付
+     * @return 条件を満たすローンのDTOリスト
+     */
     public List<LoanDto> findByEndDateAfter(LocalDate date) {
         return repository.findByEndDateAfter(date).stream()
                 .map(this::toDto)
                 .toList();
     }
 
-    // シェアパイの更新
+    /**
+     * ローンのシェア配分を更新します。
+     * 
+     * @param loanId ローンID
+     * @param sharePieDto 新しいシェア配分DTO
+     * @return 更新されたローンのDTO
+     * @throws BusinessException ローンが存在しない場合（LOAN_NOT_FOUND）
+     */
     @Transactional
     public LoanDto updateSharePie(Long loanId, SharePieDto sharePieDto) {
         Loan loan = repository.findById(loanId)
@@ -172,8 +234,14 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         return toDto(repository.save(loan));
     }
 
+    /**
+     * 返済スケジュールを生成します。
+     * 元本は満期一括返済、利息は3ヶ月ごとの支払いスケジュールを生成します。
+     * 利息は実日数（Actual）/365日で計算します。
+     * 
+     * @param loan スケジュールを生成するローン
+     */
     public void generateRepaymentSchedules(Loan loan) {
-        // 元本一括返済の場合
         RepaymentSchedule principalSchedule = new RepaymentSchedule();
         principalSchedule.setLoan(loan);
         principalSchedule.setScheduledDate(loan.getEndDate());
@@ -181,7 +249,6 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         principalSchedule.setPaymentType(RepaymentSchedule.PaymentType.PRINCIPAL);
         loan.addRepaymentSchedule(principalSchedule);
 
-        // 利息は3ヶ月ごとに支払い
         LocalDate currentDate = loan.getStartDate();
         while (currentDate.isBefore(loan.getEndDate())) {
             LocalDate nextPaymentDate = currentDate.plusMonths(3);
@@ -192,7 +259,7 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             RepaymentSchedule interestSchedule = new RepaymentSchedule();
             interestSchedule.setLoan(loan);
             interestSchedule.setScheduledDate(nextPaymentDate);
-            // 年利を日割り計算して3ヶ月分の利息を計算
+
             BigDecimal daysInPeriod = BigDecimal.valueOf(ChronoUnit.DAYS.between(currentDate, nextPaymentDate));
             BigDecimal yearlyInterest = loan.getTotalAmount()
                 .multiply(loan.getInterestRate())

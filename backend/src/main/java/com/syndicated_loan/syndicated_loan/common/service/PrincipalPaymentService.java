@@ -17,6 +17,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * シンジケートローンにおける元本返済（PrincipalPayment）を管理するサービスクラス。
+ * ローンの元本返済処理、返済額の検証、残高管理、返済率の計算などの機能を提供します。
+ * 返済による投資家の投資額への影響も管理します。
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -26,6 +31,16 @@ public class PrincipalPaymentService
     private final LoanService loanService;
     private final LoanRepository loanRepository;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository リポジトリインスタンス
+     * @param amountPieService 金額配分サービス
+     * @param positionService ポジションサービス
+     * @param loanService ローンサービス
+     * @param loanRepository ローンリポジトリ
+     * @param investorService 投資家サービス
+     */
     public PrincipalPaymentService(
             PrincipalPaymentRepository repository,
             AmountPieService amountPieService,
@@ -38,6 +53,14 @@ public class PrincipalPaymentService
         this.loanRepository = loanRepository;
     }
 
+    /**
+     * DTOをエンティティに変換します。
+     * 関連するローンの検証も行います。
+     * 
+     * @param dto 変換元のDTO
+     * @return 変換された元本返済エンティティ
+     * @throws BusinessException ローンが存在しない場合（LOAN_NOT_FOUND）
+     */
     @Override
     public PrincipalPayment toEntity(PrincipalPaymentDto dto) {
         PrincipalPayment entity = new PrincipalPayment();
@@ -46,20 +69,24 @@ public class PrincipalPaymentService
         entity.setDate(dto.getDate());
         entity.setAmount(dto.getAmount());
 
-        // 関連するローンの設定
         Loan loan = loanService.findById(dto.getLoanId())
                 .map(loanService::toEntity)
                 .orElseThrow(() -> new BusinessException("Loan not found", "LOAN_NOT_FOUND"));
         entity.setLoan(loan);
 
-        // 関連するPositionとAmountPieの設定
         setBaseProperties(entity, dto);
-
         entity.setPaymentAmount(dto.getPaymentAmount());
         entity.setVersion(dto.getVersion());
         return entity;
     }
 
+    /**
+     * エンティティをDTOに変換します。
+     * 返済率の計算や残高情報も設定します。
+     * 
+     * @param entity 変換元のエンティティ
+     * @return 変換された元本返済DTO（返済率と残高情報を含む）
+     */
     @Override
     public PrincipalPaymentDto toDto(PrincipalPayment entity) {
         PrincipalPaymentDto dto = PrincipalPaymentDto.builder()
@@ -74,11 +101,9 @@ public class PrincipalPaymentService
                 .version(entity.getVersion())
                 .build();
 
-        // レスポンス用の追加情報
         setBaseDtoProperties(dto, entity);
         dto.setLoan(loanService.toDto(entity.getLoan()));
 
-        // 返済率の計算
         if (entity.getLoan().getTotalAmount().compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal repaymentRate = entity.getPaymentAmount()
                     .divide(entity.getLoan().getTotalAmount(), 4, BigDecimal.ROUND_HALF_UP)
@@ -86,7 +111,6 @@ public class PrincipalPaymentService
             dto.setRepaymentRate(repaymentRate);
         }
 
-        // 残高の計算
         List<PrincipalPayment> previousPayments = repository.findByLoanOrderByDateAsc(entity.getLoan());
         BigDecimal totalPaid = previousPayments.stream()
                 .filter(payment -> payment.getDate().isBefore(entity.getDate()) ||
@@ -98,7 +122,13 @@ public class PrincipalPaymentService
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 指定されたローンの元本返済を検索します。
+     * 
+     * @param loanId ローンID
+     * @return 元本返済のDTOリスト
+     * @throws BusinessException ローンが存在しない場合（LOAN_NOT_FOUND）
+     */
     public List<PrincipalPaymentDto> findByLoan(Long loanId) {
         Loan loan = loanService.findById(loanId)
                 .map(loanService::toEntity)
@@ -108,18 +138,40 @@ public class PrincipalPaymentService
                 .toList();
     }
 
+    /**
+     * 指定された金額より大きい返済を検索します。
+     * 
+     * @param amount 基準となる金額
+     * @return 条件を満たす元本返済のDTOリスト
+     */
     public List<PrincipalPaymentDto> findByPaymentAmountGreaterThan(BigDecimal amount) {
         return repository.findByPaymentAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された期間内の返済を検索します。
+     * 
+     * @param startDate 期間開始日時
+     * @param endDate 期間終了日時
+     * @return 条件を満たす元本返済のDTOリスト
+     */
     public List<PrincipalPaymentDto> findByDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repository.findByDateBetween(startDate, endDate).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定されたローンの指定された期間内の返済を検索します。
+     * 
+     * @param loanId ローンID
+     * @param startDate 期間開始日時
+     * @param endDate 期間終了日時
+     * @return 条件を満たす元本返済のDTOリスト
+     * @throws BusinessException ローンが存在しない場合（LOAN_NOT_FOUND）
+     */
     public List<PrincipalPaymentDto> findByLoanAndDateBetween(Long loanId, LocalDateTime startDate,
             LocalDateTime endDate) {
         Loan loan = loanService.findById(loanId)
@@ -130,18 +182,26 @@ public class PrincipalPaymentService
                 .toList();
     }
 
-    // 元本返済の実行（ローン残高も更新）
+    /**
+     * 元本返済を実行し、ローン残高を更新します。
+     * 投資家の現在の投資額も減額します。
+     * 
+     * @param principalPaymentId 元本返済ID
+     * @return 実行された元本返済のDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - 元本返済が存在しない場合（PRINCIPAL_PAYMENT_NOT_FOUND）
+     *                          - すでに実行済みの場合（PRINCIPAL_PAYMENT_ALREADY_EXECUTED）
+     *                          - 返済額が残高を超える場合（PAYMENT_EXCEEDS_BALANCE）
+     */
     @Transactional
     public PrincipalPaymentDto executePrincipalPayment(Long principalPaymentId) {
         PrincipalPayment principalPayment = repository.findById(principalPaymentId)
                 .orElseThrow(() -> new BusinessException("Principal payment not found", "PRINCIPAL_PAYMENT_NOT_FOUND"));
 
-        // 支払い済みの場合はエラー
         if ("EXECUTED".equals(principalPayment.getStatus())) {
             throw new BusinessException("Principal payment already executed", "PRINCIPAL_PAYMENT_ALREADY_EXECUTED");
         }
 
-        // 返済額がローン残高を超えていないかチェック
         Loan loan = principalPayment.getLoan();
         List<PrincipalPayment> previousPayments = repository.findByLoanOrderByDateAsc(loan);
         BigDecimal totalPaid = previousPayments.stream()
@@ -154,22 +214,31 @@ public class PrincipalPaymentService
             throw new BusinessException("Payment amount exceeds remaining balance", "PAYMENT_EXCEEDS_BALANCE");
         }
 
-        // ステータスを更新
         principalPayment.setStatus("EXECUTED");
         principalPayment.setProcessedDate(java.time.LocalDateTime.now());
 
-        // ローン残高を更新
         loan.setAmount(remainingBalance.subtract(principalPayment.getPaymentAmount()));
         loanRepository.save(loan);
 
-        // 投資家の現在の投資額を更新（減額）
         AmountPieDto amountPieDto = amountPieService.toDto(principalPayment.getAmountPie());
         updateInvestorCurrentInvestments(amountPieDto, BigDecimal.valueOf(-1));
 
         return toDto(repository.save(principalPayment));
     }
 
-    // 返済金額の更新（実行前のみ可能）
+    /**
+     * 元本返済金額を更新します。
+     * 実行済みの返済は更新できず、返済額は残高を超えることはできません。
+     * 
+     * @param principalPaymentId 元本返済ID
+     * @param newAmount 新しい返済金額
+     * @return 更新された元本返済のDTO
+     * @throws BusinessException 以下の場合に発生:
+     *                          - 元本返済が存在しない場合（PRINCIPAL_PAYMENT_NOT_FOUND）
+     *                          - すでに実行済みの場合（PRINCIPAL_PAYMENT_ALREADY_EXECUTED）
+     *                          - 金額が0以下の場合（INVALID_PAYMENT_AMOUNT）
+     *                          - 返済額が残高を超える場合（PAYMENT_EXCEEDS_BALANCE）
+     */
     @Transactional
     public PrincipalPaymentDto updatePaymentAmount(Long principalPaymentId, BigDecimal newAmount) {
         PrincipalPayment principalPayment = repository.findById(principalPaymentId)
@@ -184,7 +253,6 @@ public class PrincipalPaymentService
             throw new BusinessException("Payment amount must be positive", "INVALID_PAYMENT_AMOUNT");
         }
 
-        // 返済額がローン残高を超えていないかチェック
         Loan loan = principalPayment.getLoan();
         List<PrincipalPayment> previousPayments = repository.findByLoanOrderByDateAsc(loan);
         BigDecimal totalPaid = previousPayments.stream()
@@ -198,7 +266,7 @@ public class PrincipalPaymentService
         }
 
         principalPayment.setPaymentAmount(newAmount);
-        principalPayment.setAmount(newAmount); // 取引金額も更新
+        principalPayment.setAmount(newAmount);
 
         return toDto(repository.save(principalPayment));
     }

@@ -10,18 +10,25 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * BaseServiceの抽象実装クラス
+ * BaseServiceの抽象実装クラス。
+ * エンティティの基本的なCRUD操作を提供する抽象クラスです。
  * 
- * @param <T>  エンティティの型
- * @param <ID> IDの型
- * @param <D>  DTOの型
- * @param <R>  リポジトリの型
+ * @param <T>  操作対象のエンティティの型
+ * @param <ID> エンティティのID型
+ * @param <D>  エンティティに対応するDTO型
+ * @param <R>  エンティティに対応するJpaRepository型
  */
 public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, ID>>
         implements BaseService<T, ID, D> {
 
+    /** エンティティの永続化を担当するリポジトリ */
     protected final R repository;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository エンティティの永続化を担当するリポジトリ
+     */
     protected AbstractBaseService(R repository) {
         this.repository = repository;
     }
@@ -30,6 +37,13 @@ public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, I
         return repository;
     }
 
+    /**
+     * エンティティを新規作成します。
+     * 
+     * @param dto 作成するエンティティの情報を含むDTO
+     * @return 作成されたエンティティのDTO
+     * @throws BusinessException DTOからエンティティへの変換に失敗した場合
+     */
     @Override
     @Transactional
     public D create(D dto) {
@@ -38,12 +52,23 @@ public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, I
         return toDto(savedEntity);
     }
 
+    /**
+     * 指定されたIDのエンティティを検索します。
+     * 
+     * @param id 検索対象のエンティティのID
+     * @return 見つかったエンティティのDTO、存在しない場合は空のOptional
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<D> findById(ID id) {
         return repository.findById(id).map(this::toDto);
     }
 
+    /**
+     * 全てのエンティティを取得します。
+     * 
+     * @return 全エンティティのDTOのリスト
+     */
     @Override
     @Transactional(readOnly = true)
     public List<D> findAll() {
@@ -52,6 +77,14 @@ public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, I
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 指定されたIDのエンティティを更新します。
+     * 
+     * @param id  更新対象のエンティティのID
+     * @param dto 更新する内容を含むDTO
+     * @return 更新されたエンティティのDTO
+     * @throws BusinessException エンティティが存在しない場合、またはDTOからエンティティへの変換に失敗した場合
+     */
     @Override
     @Transactional
     public D update(ID id, D dto) {
@@ -64,6 +97,12 @@ public abstract class AbstractBaseService<T, ID, D, R extends JpaRepository<T, I
         return toDto(savedEntity);
     }
 
+    /**
+     * 指定されたIDのエンティティを削除します。
+     * 
+     * @param id 削除対象のエンティティのID
+     * @throws BusinessException エンティティが存在しない場合
+     */
     @Override
     @Transactional
     public void delete(ID id) {
