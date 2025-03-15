@@ -38,24 +38,26 @@
 
 ### Transaction Management
 1. ✅ Facility management
-   - Core structure
+   - Facility creation and management
+   - Share pie registration
    - Investment tracking
    - Position monitoring
    - Trade handling
 
-2. ✅ Payment processing
-   - Principal payments
-   - Interest calculations
-   - Fee distributions
-   - Payment scheduling
+2. ✅ Transaction Implementation
+   - ✅ Facility investment registration and execution
+   - ✅ Drawdown registration and execution
+   - ✅ Fee payment registration and execution
+   - 🔄 Interest payment implementation
+   - 🔄 Principal payment implementation
 
 ## In Progress
 
 ### Features
-1. 🔄 Share calculations
-   - Base implementation complete
-   - Testing in progress
-   - Edge cases pending
+1. 🔄 Payment Processing
+   - Interest payment implementation and testing
+   - Principal payment implementation and testing
+   - Complex payment scenarios
 
 2. 🔄 Position tracking
    - Core logic implemented
