@@ -97,11 +97,12 @@ public class InterestPaymentService
         entity.setType("INTEREST_PAYMENT");
         entity.setDate(dto.getDate());
 
-        // ローンの設定
+        // ローンの設定（関連する Position としても設定）
         Loan loan = loanService.findById(dto.getLoanId())
             .map(loanService::toEntity)
             .orElseThrow(() -> new BusinessException("Loan not found", "LOAN_NOT_FOUND"));
         entity.setLoan(loan);
+        entity.setRelatedPosition(loan);  // ここを追加
 
         // 返済スケジュールから利息情報を取得
         RepaymentSchedule schedule = findInterestSchedule(dto.getLoanId(), 
