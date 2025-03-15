@@ -10,8 +10,9 @@
    - Position monitoring
 
 2. Active development areas
-   - Transaction processing
-   - Share calculations
+   - Payment processing implementation
+   - Interest payment implementation
+   - Principal payment implementation
    - Payment distributions
    - Position updates
 
@@ -37,10 +38,11 @@
    - Syndicate structure
 
 2. Transaction processing
-   - Drawdown handling
-   - Trade settlement
-   - Payment processing
-   - Position tracking
+   - Facility creation and management
+   - Share pie registration
+   - Facility investment registration and execution
+   - Drawdown registration and execution
+   - Fee payment registration and execution
 
 ### Technical Updates
 1. Error handling improvements
@@ -71,7 +73,7 @@
 4. Documentation updates
 
 ### Development Priorities
-1. Core functionality completion
+1. Interest and Principal payment implementation
 2. Error handling enhancement
 3. Testing improvement
 4. Technical debt reduction
@@ -79,8 +81,8 @@
 ## Next Steps
 
 ### Immediate Tasks
-1. Complete transaction processing
-2. Enhance position calculations
+1. Complete interest payment implementation
+2. Complete principal payment implementation
 3. Improve test coverage
 4. Update documentation
 
