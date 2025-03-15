@@ -152,7 +152,7 @@ curl -X POST http://localhost:8080/api/fee-payments \
     "facilityId": 1,
     "feeType": "COMMITMENT_FEE",
     "paymentAmount": 20000,
-    "date": "2025-01-31:00:00",
+    "date": "2025-01-31T15:00:00",
     "relatedPositionId": 1
   }'
 
