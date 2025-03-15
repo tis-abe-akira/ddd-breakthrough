@@ -137,3 +137,17 @@ echo "fee-paymentsの実行"
 curl -X PUT http://localhost:8080/api/fee-payments/4/execute
 
 
+# 利息支払いの登録
+echo "\n"
+echo "interest-paymentsの登録"
+curl -X POST http://localhost:8080/api/interest-payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "loanId": 2,
+    "date": "2025-06-15T10:00:00"
+  }'
+
+# 利息支払いの実行
+echo "\n"
+echo "interest-paymentsの実行"
+curl -X PUT http://localhost:8080/api/interest-payments/5/execute

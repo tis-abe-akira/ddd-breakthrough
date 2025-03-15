@@ -176,7 +176,7 @@ curl -X POST http://localhost:8080/api/interest-payments \
   }'
 
 # 利息支払いの実行
-curl -X PUT http://localhost:8080/api/interest-payments/1/execute
+curl -X PUT http://localhost:8080/api/interest-payments/5/execute
 ```
 
 ### 8. 元本返済の登録と実行

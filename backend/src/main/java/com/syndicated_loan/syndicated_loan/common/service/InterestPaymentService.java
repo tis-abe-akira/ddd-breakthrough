@@ -208,6 +208,24 @@ public class InterestPaymentService
                 .toList();
     }
 
+    // 配分結果の取得
+    public Map<String, Object> getDistributionResult(Long interestPaymentId) {
+        InterestPayment interestPayment = repository.findById(interestPaymentId)
+                .orElseThrow(() -> new BusinessException("Interest payment not found", "INTEREST_PAYMENT_NOT_FOUND"));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalAmount", interestPayment.getAmount());
+        result.put("paymentDate", interestPayment.getDate());
+        result.put("status", interestPayment.getStatus());
+
+        if (interestPayment.getAmountPie() != null) {
+            Map<Long, BigDecimal> distribution = interestPayment.getAmountPie().getAmounts();
+            result.put("distribution", distribution);
+        }
+
+        return result;
+    }
+
     // 利息支払いの実行
     @Transactional
     public InterestPaymentDto executeInterestPayment(Long interestPaymentId) {
