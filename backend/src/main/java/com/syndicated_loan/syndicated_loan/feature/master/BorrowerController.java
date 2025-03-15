@@ -1,5 +1,6 @@
 package com.syndicated_loan.syndicated_loan.feature.master;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,14 +32,14 @@ public class BorrowerController {
     }
 
     @PostMapping
-    public ResponseEntity<BorrowerDto> create(@RequestBody BorrowerDto dto) {
+    public ResponseEntity<BorrowerDto> create(@Valid @RequestBody BorrowerDto dto) {
         return ResponseEntity.ok(borrowerService.create(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<BorrowerDto> update(
             @PathVariable Long id,
-            @RequestBody BorrowerDto dto) {
+            @Valid @RequestBody BorrowerDto dto) {
         return ResponseEntity.ok(borrowerService.update(id, dto));
     }
 
