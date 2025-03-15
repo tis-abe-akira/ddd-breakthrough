@@ -10,14 +10,30 @@ import com.syndicated_loan.syndicated_loan.common.repository.BorrowerRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * シンジケートローンにおける借入人（Borrower）を管理するサービスクラス。
+ * 借入人の基本情報、信用格付け、財務諸表などの管理機能を提供します。
+ */
 @Service
 @Transactional(readOnly = true)
 public class BorrowerService extends AbstractBaseService<Borrower, Long, BorrowerDto, BorrowerRepository> {
 
+    /**
+     * コンストラクタ
+     * 
+     * @param repository 借入人リポジトリインスタンス
+     */
     public BorrowerService(BorrowerRepository repository) {
         super(repository);
     }
 
+    /**
+     * DTOをエンティティに変換します。
+     * 借入人の基本情報、信用情報、財務情報などを設定します。
+     * 
+     * @param dto 変換元のDTO
+     * @return 変換された借入人エンティティ
+     */
     @Override
     public Borrower toEntity(BorrowerDto dto) {
         Borrower entity = new Borrower();
@@ -32,6 +48,12 @@ public class BorrowerService extends AbstractBaseService<Borrower, Long, Borrowe
         return entity;
     }
 
+    /**
+     * エンティティをDTOに変換します。
+     * 
+     * @param entity 変換元のエンティティ
+     * @return 変換された借入人DTO
+     */
     @Override
     public BorrowerDto toDto(Borrower entity) {
         return BorrowerDto.builder()
@@ -51,6 +73,15 @@ public class BorrowerService extends AbstractBaseService<Borrower, Long, Borrowe
         entity.setId(id);
     }
 
+    /**
+     * 指定された条件に基づいて借入人を検索します。
+     * 各検索条件はnullの場合、その条件での絞り込みは行われません。
+     * 
+     * @param name 借入人名（部分一致）
+     * @param creditRating 信用格付け（完全一致）
+     * @param industry 業種（完全一致）
+     * @return 条件に合致する借入人のDTOリスト
+     */
     public List<BorrowerDto> search(String name, String creditRating, String industry) {
         return repository.findAll().stream()
                 .filter(borrower -> name == null || borrower.getName().contains(name))
