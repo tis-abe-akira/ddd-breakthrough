@@ -1,0 +1,2756 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/syndicates/{id}:
+    get:
+      tags:
+      - syndicate-controller
+      operationId: findById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SyndicateDto'
+    put:
+      tags:
+      - syndicate-controller
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyndicateDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SyndicateDto'
+    delete:
+      tags:
+      - syndicate-controller
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/share-pies/{id}:
+    get:
+      tags:
+      - share-pie-controller
+      operationId: findById_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SharePieDto'
+    put:
+      tags:
+      - share-pie-controller
+      operationId: update_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SharePieDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SharePieDto'
+    delete:
+      tags:
+      - share-pie-controller
+      operationId: delete_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/share-pies/{id}/shares:
+    put:
+      tags:
+      - share-pie-controller
+      operationId: updateShares
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: number
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SharePieDto'
+  /api/principal-payments/{id}:
+    get:
+      tags:
+      - principal-payment-controller
+      operationId: findById_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PrincipalPaymentDto'
+    put:
+      tags:
+      - principal-payment-controller
+      operationId: update_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrincipalPaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PrincipalPaymentDto'
+    delete:
+      tags:
+      - principal-payment-controller
+      operationId: delete_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/principal-payments/{id}/payment-amount:
+    put:
+      tags:
+      - principal-payment-controller
+      operationId: updatePaymentAmount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: newAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/principal-payments/{id}/execute:
+    put:
+      tags:
+      - principal-payment-controller
+      operationId: executePrincipalPayment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/principal-payments/{id}/amount-pie:
+    put:
+      tags:
+      - principal-payment-controller
+      operationId: updateAmountPie
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrincipalPaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/investors/{id}:
+    get:
+      tags:
+      - investor-controller
+      operationId: findById_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvestorDto'
+    put:
+      tags:
+      - investor-controller
+      operationId: update_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestorDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvestorDto'
+    delete:
+      tags:
+      - investor-controller
+      operationId: delete_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/interest-payments/{id}:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findById_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InterestPaymentDto'
+    put:
+      tags:
+      - interest-payment-controller
+      operationId: update_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestPaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InterestPaymentDto'
+    delete:
+      tags:
+      - interest-payment-controller
+      operationId: delete_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/interest-payments/{id}/payment-amount:
+    put:
+      tags:
+      - interest-payment-controller
+      operationId: calculateAndUpdatePaymentAmount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InterestPaymentDto'
+  /api/interest-payments/{id}/execute:
+    put:
+      tags:
+      - interest-payment-controller
+      operationId: executeInterestPayment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InterestPaymentDto'
+  /api/interest-payments/{id}/amount-pie:
+    put:
+      tags:
+      - interest-payment-controller
+      operationId: updateAmountPie_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestPaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InterestPaymentDto'
+  /api/fee-payments/{id}:
+    get:
+      tags:
+      - fee-payment-controller
+      operationId: findById_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FeePaymentDto'
+    put:
+      tags:
+      - fee-payment-controller
+      operationId: update_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeePaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FeePaymentDto'
+    delete:
+      tags:
+      - fee-payment-controller
+      operationId: delete_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/fee-payments/{id}/payment-amount:
+    put:
+      tags:
+      - fee-payment-controller
+      operationId: updatePaymentAmount_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: newAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FeePaymentDto'
+  /api/fee-payments/{id}/execute:
+    put:
+      tags:
+      - fee-payment-controller
+      operationId: executeFeePayment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FeePaymentDto'
+  /api/fee-payments/{id}/amount-pie:
+    put:
+      tags:
+      - fee-payment-controller
+      operationId: updateAmountPie_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeePaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FeePaymentDto'
+  /api/facility-trades/{id}:
+    get:
+      tags:
+      - facility-trade-controller
+      operationId: findById_6
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityTradeDto'
+    put:
+      tags:
+      - facility-trade-controller
+      operationId: update_6
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityTradeDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityTradeDto'
+    delete:
+      tags:
+      - facility-trade-controller
+      operationId: delete_6
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/facility-trades/{id}/trade-amount:
+    put:
+      tags:
+      - facility-trade-controller
+      operationId: updateTradeAmount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: newAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-trades/{id}/amount-pie:
+    put:
+      tags:
+      - facility-trade-controller
+      operationId: updateAmountPie_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityTradeDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-investments/{id}:
+    get:
+      tags:
+      - facility-investment-controller
+      operationId: findById_7
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityInvestmentDto'
+    put:
+      tags:
+      - facility-investment-controller
+      operationId: update_7
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityInvestmentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityInvestmentDto'
+    delete:
+      tags:
+      - facility-investment-controller
+      operationId: delete_7
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/facility-investments/{id}/investment-amount:
+    put:
+      tags:
+      - facility-investment-controller
+      operationId: updateInvestmentAmount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: newAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityInvestmentDto'
+  /api/facility-investments/{id}/amount-pie:
+    put:
+      tags:
+      - facility-investment-controller
+      operationId: updateAmountPie_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityInvestmentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityInvestmentDto'
+  /api/facilities/{id}:
+    get:
+      tags:
+      - facility-controller
+      operationId: findById_8
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityDto'
+    put:
+      tags:
+      - facility-controller
+      operationId: update_8
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityDto'
+    delete:
+      tags:
+      - facility-controller
+      operationId: delete_8
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/facilities/{id}/share-pie:
+    put:
+      tags:
+      - facility-controller
+      operationId: updateSharePie
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SharePieDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityDto'
+  /api/facilities/{id}/available-amount:
+    put:
+      tags:
+      - facility-controller
+      operationId: updateAvailableAmount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: number
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityDto'
+  /api/drawdowns/{id}:
+    get:
+      tags:
+      - drawdown-controller
+      operationId: findById_9
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DrawdownDto'
+    put:
+      tags:
+      - drawdown-controller
+      operationId: update_9
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DrawdownDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DrawdownDto'
+    delete:
+      tags:
+      - drawdown-controller
+      operationId: delete_9
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/drawdowns/{id}/execute:
+    put:
+      tags:
+      - drawdown-controller
+      operationId: executeDrawdown
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DrawdownDto'
+  /api/drawdowns/{id}/drawdown-amount:
+    put:
+      tags:
+      - drawdown-controller
+      operationId: updateDrawdownAmount
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: newAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DrawdownDto'
+  /api/drawdowns/{id}/amount-pie:
+    put:
+      tags:
+      - drawdown-controller
+      operationId: updateAmountPie_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DrawdownDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DrawdownDto'
+  /api/borrowers/{id}:
+    get:
+      tags:
+      - borrower-controller
+      operationId: findById_10
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BorrowerDto'
+    put:
+      tags:
+      - borrower-controller
+      operationId: update_10
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorrowerDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BorrowerDto'
+    delete:
+      tags:
+      - borrower-controller
+      operationId: delete_10
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+  /api/syndicates:
+    get:
+      tags:
+      - syndicate-controller
+      operationId: findAll
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyndicateDto'
+    post:
+      tags:
+      - syndicate-controller
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyndicateDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SyndicateDto'
+  /api/syndicates/{id}/members/{investorId}:
+    post:
+      tags:
+      - syndicate-controller
+      operationId: addMember
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: investorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SyndicateDto'
+    delete:
+      tags:
+      - syndicate-controller
+      operationId: removeMember
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: investorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SyndicateDto'
+  /api/share-pies:
+    get:
+      tags:
+      - share-pie-controller
+      operationId: findAll_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharePieDto'
+    post:
+      tags:
+      - share-pie-controller
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SharePieDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SharePieDto'
+  /api/principal-payments:
+    get:
+      tags:
+      - principal-payment-controller
+      operationId: findAll_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrincipalPaymentDto'
+    post:
+      tags:
+      - principal-payment-controller
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrincipalPaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/investors:
+    get:
+      tags:
+      - investor-controller
+      operationId: findAll_3
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvestorDto'
+    post:
+      tags:
+      - investor-controller
+      operationId: create_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestorDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InvestorDto'
+  /api/interest-payments:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findAll_4
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InterestPaymentDto'
+    post:
+      tags:
+      - interest-payment-controller
+      operationId: create_4
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterestPaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InterestPaymentDto'
+  /api/fee-payments:
+    get:
+      tags:
+      - fee-payment-controller
+      operationId: findAll_5
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeePaymentDto'
+    post:
+      tags:
+      - fee-payment-controller
+      operationId: create_5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeePaymentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FeePaymentDto'
+  /api/facility-trades:
+    get:
+      tags:
+      - facility-trade-controller
+      operationId: findAll_6
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityTradeDto'
+    post:
+      tags:
+      - facility-trade-controller
+      operationId: create_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityTradeDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-investments:
+    get:
+      tags:
+      - facility-investment-controller
+      operationId: findAll_7
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityInvestmentDto'
+    post:
+      tags:
+      - facility-investment-controller
+      operationId: create_7
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityInvestmentDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityInvestmentDto'
+  /api/facilities:
+    get:
+      tags:
+      - facility-controller
+      operationId: findAll_8
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityDto'
+    post:
+      tags:
+      - facility-controller
+      operationId: create_8
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacilityDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FacilityDto'
+  /api/drawdowns:
+    get:
+      tags:
+      - drawdown-controller
+      operationId: findAll_9
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DrawdownDto'
+    post:
+      tags:
+      - drawdown-controller
+      operationId: create_9
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DrawdownDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DrawdownDto'
+  /api/borrowers:
+    get:
+      tags:
+      - borrower-controller
+      operationId: findAll_10
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BorrowerDto'
+    post:
+      tags:
+      - borrower-controller
+      operationId: create_10
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BorrowerDto'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BorrowerDto'
+  /api/syndicates/search/member/{memberId}:
+    get:
+      tags:
+      - syndicate-controller
+      operationId: findByMember
+      parameters:
+      - name: memberId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyndicateDto'
+  /api/syndicates/search/lead-bank/{leadBankId}:
+    get:
+      tags:
+      - syndicate-controller
+      operationId: findByLeadBank
+      parameters:
+      - name: leadBankId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyndicateDto'
+  /api/syndicates/search/commitment:
+    get:
+      tags:
+      - syndicate-controller
+      operationId: findByTotalCommitmentGreaterThan
+      parameters:
+      - name: minAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyndicateDto'
+  /api/share-pies/{id}/investors/{investorId}/share:
+    get:
+      tags:
+      - share-pie-controller
+      operationId: getInvestorShare
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: investorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: number
+  /api/share-pies/search/minimum-share:
+    get:
+      tags:
+      - share-pie-controller
+      operationId: findByMinimumShare
+      parameters:
+      - name: minShare
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharePieDto'
+  /api/share-pies/search/investor/{investorId}:
+    get:
+      tags:
+      - share-pie-controller
+      operationId: findByInvestorId
+      parameters:
+      - name: investorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SharePieDto'
+  /api/principal-payments/period:
+    get:
+      tags:
+      - principal-payment-controller
+      operationId: findByDateBetween
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/principal-payments/loan/{loanId}:
+    get:
+      tags:
+      - principal-payment-controller
+      operationId: findByLoan
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/principal-payments/loan/{loanId}/period:
+    get:
+      tags:
+      - principal-payment-controller
+      operationId: findByLoanAndDateBetween
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/principal-payments/amount-greater-than/{amount}:
+    get:
+      tags:
+      - principal-payment-controller
+      operationId: findByPaymentAmountGreaterThan
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrincipalPaymentDto'
+  /api/investors/search:
+    get:
+      tags:
+      - investor-controller
+      operationId: search
+      parameters:
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: minCapacity
+        in: query
+        required: false
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvestorDto'
+  /api/interest-payments/{id}/distribution:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: getDistribution
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+  /api/interest-payments/rate-greater-than/{rate}:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findByInterestRateGreaterThan
+      parameters:
+      - name: rate
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InterestPaymentDto'
+  /api/interest-payments/period:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findByInterestStartDateBetween
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InterestPaymentDto'
+  /api/interest-payments/loan/{loanId}:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findByLoan_1
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InterestPaymentDto'
+  /api/interest-payments/loan/{loanId}/period:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findByLoanAndInterestStartDateBetween
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InterestPaymentDto'
+  /api/interest-payments/amount-greater-than/{amount}:
+    get:
+      tags:
+      - interest-payment-controller
+      operationId: findByPaymentAmountGreaterThan_1
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InterestPaymentDto'
+  /api/fee-payments/type/{feeType}:
+    get:
+      tags:
+      - fee-payment-controller
+      operationId: findByFeeType
+      parameters:
+      - name: feeType
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeePaymentDto'
+  /api/fee-payments/facility/{facilityId}:
+    get:
+      tags:
+      - fee-payment-controller
+      operationId: findByFacility
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeePaymentDto'
+  /api/fee-payments/facility/{facilityId}/type/{feeType}:
+    get:
+      tags:
+      - fee-payment-controller
+      operationId: findByFacilityAndFeeType
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: feeType
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeePaymentDto'
+  /api/fee-payments/amount-greater-than/{amount}:
+    get:
+      tags:
+      - fee-payment-controller
+      operationId: findByPaymentAmountGreaterThan_2
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeePaymentDto'
+  /api/facility-trades/seller/{sellerId}:
+    get:
+      tags:
+      - facility-trade-controller
+      operationId: findBySeller
+      parameters:
+      - name: sellerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-trades/investor/{investorId}:
+    get:
+      tags:
+      - facility-trade-controller
+      operationId: findBySellerOrBuyer
+      parameters:
+      - name: investorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-trades/buyer/{buyerId}:
+    get:
+      tags:
+      - facility-trade-controller
+      operationId: findByBuyer
+      parameters:
+      - name: buyerId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-trades/amount-greater-than/{amount}:
+    get:
+      tags:
+      - facility-trade-controller
+      operationId: findByTradeAmountGreaterThan
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityTradeDto'
+  /api/facility-investments/investor/{investorId}:
+    get:
+      tags:
+      - facility-investment-controller
+      operationId: findByInvestor
+      parameters:
+      - name: investorId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityInvestmentDto'
+  /api/facility-investments/amount-greater-than/{amount}:
+    get:
+      tags:
+      - facility-investment-controller
+      operationId: findByInvestmentAmountGreaterThan
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityInvestmentDto'
+  /api/facilities/search/total-amount:
+    get:
+      tags:
+      - facility-controller
+      operationId: findByTotalAmountGreaterThan
+      parameters:
+      - name: minAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityDto'
+  /api/facilities/search/syndicate/{syndicateId}:
+    get:
+      tags:
+      - facility-controller
+      operationId: findBySyndicate
+      parameters:
+      - name: syndicateId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityDto'
+  /api/facilities/search/end-date:
+    get:
+      tags:
+      - facility-controller
+      operationId: findByEndDateAfter
+      parameters:
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityDto'
+  /api/facilities/search/available-amount:
+    get:
+      tags:
+      - facility-controller
+      operationId: findByAvailableAmountGreaterThan
+      parameters:
+      - name: minAmount
+        in: query
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FacilityDto'
+  /api/drawdowns/facility/{facilityId}:
+    get:
+      tags:
+      - drawdown-controller
+      operationId: findByRelatedFacility
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DrawdownDto'
+  /api/drawdowns/facility/{facilityId}/amount-greater-than/{amount}:
+    get:
+      tags:
+      - drawdown-controller
+      operationId: findByRelatedFacilityAndDrawdownAmountGreaterThan
+      parameters:
+      - name: facilityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DrawdownDto'
+  /api/drawdowns/amount-greater-than/{amount}:
+    get:
+      tags:
+      - drawdown-controller
+      operationId: findByDrawdownAmountGreaterThan
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DrawdownDto'
+  /api/borrowers/search:
+    get:
+      tags:
+      - borrower-controller
+      operationId: search_1
+      parameters:
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: creditRating
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: industry
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BorrowerDto'
+components:
+  schemas:
+    InvestorDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        type:
+          type: string
+        investmentCapacity:
+          type: number
+        currentInvestments:
+          type: number
+        version:
+          type: integer
+          format: int64
+    SyndicateDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        leadBankId:
+          type: integer
+          format: int64
+        memberIds:
+          uniqueItems: true
+          type: array
+          items:
+            type: integer
+            format: int64
+        totalCommitment:
+          type: number
+        version:
+          type: integer
+          format: int64
+        leadBank:
+          $ref: '#/components/schemas/InvestorDto'
+        members:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/InvestorDto'
+    SharePieDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        positionId:
+          type: integer
+          format: int64
+        shares:
+          type: object
+          additionalProperties:
+            type: number
+        version:
+          type: integer
+          format: int64
+        investorShares:
+          type: object
+          additionalProperties:
+            type: number
+    AmountPieDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        transactionId:
+          type: integer
+          format: int64
+        amounts:
+          type: object
+          additionalProperties:
+            type: number
+        version:
+          type: integer
+          format: int64
+        investorAmounts:
+          type: object
+          additionalProperties:
+            type: number
+        totalAmount:
+          type: number
+    BorrowerDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          maxLength: 100
+          minLength: 0
+          type: string
+        creditRating:
+          type: string
+        financialStatements:
+          type: string
+        contactInformation:
+          type: string
+        companyType:
+          type: string
+        industry:
+          type: string
+        version:
+          type: integer
+          format: int64
+    FacilityDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        totalAmount:
+          type: number
+        availableAmount:
+          type: number
+        startDate:
+          type: string
+          format: date
+        term:
+          type: integer
+          format: int32
+        endDate:
+          type: string
+          format: date
+        interestRate:
+          type: number
+        syndicateId:
+          type: integer
+          format: int64
+        sharePieId:
+          type: integer
+          format: int64
+        version:
+          type: integer
+          format: int64
+        borrowerId:
+          type: integer
+          format: int64
+        syndicate:
+          $ref: '#/components/schemas/SyndicateDto'
+        sharePie:
+          $ref: '#/components/schemas/SharePieDto'
+        utilizationRate:
+          type: number
+    LoanDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        amount:
+          type: number
+        totalAmount:
+          type: number
+        borrowerId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        interestRate:
+          type: number
+        facilityId:
+          type: integer
+          format: int64
+        sharePieId:
+          type: integer
+          format: int64
+        version:
+          type: integer
+          format: int64
+        term:
+          type: integer
+          format: int32
+        borrower:
+          $ref: '#/components/schemas/BorrowerDto'
+        facility:
+          $ref: '#/components/schemas/FacilityDto'
+        sharePie:
+          $ref: '#/components/schemas/SharePieDto'
+        remainingAmount:
+          type: number
+        repaidAmount:
+          type: number
+        nextPaymentDate:
+          type: string
+          format: date
+        nextPaymentAmount:
+          type: number
+    PrincipalPaymentDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        date:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        relatedPositionId:
+          type: integer
+          format: int64
+        amountPieId:
+          type: integer
+          format: int64
+        status:
+          type: string
+        processedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        positionType:
+          type: string
+        positionReference:
+          type: string
+        amountPie:
+          $ref: '#/components/schemas/AmountPieDto'
+        loanId:
+          type: integer
+          format: int64
+        paymentAmount:
+          type: number
+        repaymentRate:
+          type: number
+        remainingBalance:
+          type: number
+        loan:
+          $ref: '#/components/schemas/LoanDto'
+    InterestPaymentDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        date:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        relatedPositionId:
+          type: integer
+          format: int64
+        amountPieId:
+          type: integer
+          format: int64
+        status:
+          type: string
+        processedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        positionType:
+          type: string
+        positionReference:
+          type: string
+        amountPie:
+          $ref: '#/components/schemas/AmountPieDto'
+        interestRate:
+          type: number
+        paymentAmount:
+          type: number
+        interestStartDate:
+          type: string
+          format: date
+        interestEndDate:
+          type: string
+          format: date
+        loanId:
+          type: integer
+          format: int64
+        loan:
+          $ref: '#/components/schemas/LoanDto'
+        daysInPeriod:
+          type: integer
+          format: int32
+        baseAmount:
+          type: number
+        calculationMethod:
+          type: string
+        paymentStatus:
+          type: string
+        penaltyRate:
+          type: number
+        penaltyAmount:
+          type: number
+    FeePaymentDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        date:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        relatedPositionId:
+          type: integer
+          format: int64
+        amountPieId:
+          type: integer
+          format: int64
+        status:
+          type: string
+        processedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        positionType:
+          type: string
+        positionReference:
+          type: string
+        amountPie:
+          $ref: '#/components/schemas/AmountPieDto'
+        feeType:
+          type: string
+        paymentAmount:
+          type: number
+        facilityId:
+          type: integer
+          format: int64
+        facility:
+          $ref: '#/components/schemas/FacilityDto'
+        feeDescription:
+          type: string
+        paymentPeriod:
+          type: string
+        calculationMethod:
+          type: string
+        feeRate:
+          type: number
+        paymentStatus:
+          type: string
+    FacilityTradeDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        date:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        relatedPositionId:
+          type: integer
+          format: int64
+        amountPieId:
+          type: integer
+          format: int64
+        status:
+          type: string
+        processedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        positionType:
+          type: string
+        positionReference:
+          type: string
+        amountPie:
+          $ref: '#/components/schemas/AmountPieDto'
+        sellerId:
+          type: integer
+          format: int64
+        buyerId:
+          type: integer
+          format: int64
+        tradeAmount:
+          type: number
+        seller:
+          $ref: '#/components/schemas/InvestorDto'
+        buyer:
+          $ref: '#/components/schemas/InvestorDto'
+        tradeShare:
+          type: number
+        tradeStatus:
+          type: string
+        pricePerShare:
+          type: number
+    FacilityInvestmentDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        date:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        relatedPositionId:
+          type: integer
+          format: int64
+        amountPieId:
+          type: integer
+          format: int64
+        status:
+          type: string
+        processedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        positionType:
+          type: string
+        positionReference:
+          type: string
+        amountPie:
+          $ref: '#/components/schemas/AmountPieDto'
+        investorId:
+          type: integer
+          format: int64
+        investor:
+          $ref: '#/components/schemas/InvestorDto'
+        investmentShare:
+          type: number
+        investmentStatus:
+          type: string
+    DrawdownDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        date:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        relatedPositionId:
+          type: integer
+          format: int64
+        amountPieId:
+          type: integer
+          format: int64
+        status:
+          type: string
+        processedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          format: int64
+        positionType:
+          type: string
+        positionReference:
+          type: string
+        amountPie:
+          $ref: '#/components/schemas/AmountPieDto'
+        drawdownAmount:
+          type: number
+        relatedFacilityId:
+          type: integer
+          format: int64
+        relatedFacility:
+          $ref: '#/components/schemas/FacilityDto'
+        remainingFacilityAmount:
+          type: number
+        drawdownPurpose:
+          type: string
+        drawdownStatus:
+          type: string
+        utilizationRate:
+          type: number
