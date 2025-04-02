@@ -143,6 +143,11 @@ curl -X POST http://localhost:8080/api/drawdowns \
   }'
 ```
 
+```bash
+# ドローダウンの実行
+curl -X PUT http://localhost:8080/api/drawdowns/3/execute
+```
+
 ### 6. 手数料支払いの登録と実行
 ```bash
 # 手数料支払いの登録
@@ -152,7 +157,7 @@ curl -X POST http://localhost:8080/api/fee-payments \
     "facilityId": 1,
     "feeType": "COMMITMENT_FEE",
     "paymentAmount": 20000,
-    "date": "2025-01-31:00:00",
+    "date": "2025-01-31T15:00:00",
     "relatedPositionId": 1
   }'
 
@@ -166,21 +171,12 @@ curl -X PUT http://localhost:8080/api/fee-payments/4/execute
 curl -X POST http://localhost:8080/api/interest-payments \
   -H "Content-Type: application/json" \
   -d '{
-    "loanId": 1,
-    "interestRate": 2.5,
-    "interestStartDate": "2024-01-20",
-    "interestEndDate": "2024-02-20",
-    "date": "2024-02-20T10:00:00",
-    "amountPie": {
-      "amounts": [
-        {"investorId": 1, "amount": 104166},
-        {"investorId": 2, "amount": 104166}
-      ]
-    }
+    "loanId": 2,
+    "date": "2025-06-15T10:00:00"
   }'
 
 # 利息支払いの実行
-curl -X PUT http://localhost:8080/api/interest-payments/1/execute
+curl -X PUT http://localhost:8080/api/interest-payments/5/execute
 ```
 
 ### 8. 元本返済の登録と実行

@@ -9,6 +9,7 @@ import com.syndicated_loan.syndicated_loan.common.service.InterestPaymentService
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/interest-payments")
@@ -98,5 +99,10 @@ public class InterestPaymentController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         interestPaymentService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/distribution")
+    public ResponseEntity<Map<String, Object>> getDistribution(@PathVariable Long id) {
+        return ResponseEntity.ok(interestPaymentService.getDistributionResult(id));
     }
 }
