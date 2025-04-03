@@ -39,20 +39,20 @@ const BorrowerList: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="text-center p-4">読み込み中...</div>;
+    return <div className="text-center py-4">読み込み中...</div>;
   }
 
   if (error) {
-    return <div className="text-red-500 p-4">{error}</div>;
+    return <div className="text-red-500 py-4">{error}</div>;
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">借入人一覧</h1>
+    <div className="card">
+      <div className="card-header">
+        <h1 className="card-title">借入人一覧</h1>
         <Link 
           to="/borrowers/new" 
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+          className="btn btn-primary"
         >
           新規登録
         </Link>
@@ -62,35 +62,35 @@ const BorrowerList: React.FC = () => {
         <p className="text-gray-500 text-center py-4">借入人データがありません。</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名前</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">信用格付</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">業種</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">企業形態</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">アクション</th>
+                <th>ID</th>
+                <th>名前</th>
+                <th>信用格付</th>
+                <th>業種</th>
+                <th>企業形態</th>
+                <th>アクション</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {borrowers.map((borrower) => (
-                <tr key={borrower.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{borrower.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{borrower.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{borrower.creditRating}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{borrower.industry || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{borrower.companyType || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link to={`/borrowers/${borrower.id}`} className="text-blue-600 hover:text-blue-900 mr-3">
+                <tr key={borrower.id}>
+                  <td>{borrower.id}</td>
+                  <td>{borrower.name}</td>
+                  <td>{borrower.creditRating}</td>
+                  <td>{borrower.industry || '-'}</td>
+                  <td>{borrower.companyType || '-'}</td>
+                  <td>
+                    <Link to={`/borrowers/${borrower.id}`} className="link mr-3">
                       詳細
                     </Link>
-                    <Link to={`/borrowers/${borrower.id}/edit`} className="text-green-600 hover:text-green-900 mr-3">
+                    <Link to={`/borrowers/${borrower.id}/edit`} className="link mr-3">
                       編集
                     </Link>
                     <button 
                       onClick={() => handleDelete(borrower.id)} 
-                      className="text-red-600 hover:text-red-900"
+                      className="link link-danger"
                     >
                       削除
                     </button>
