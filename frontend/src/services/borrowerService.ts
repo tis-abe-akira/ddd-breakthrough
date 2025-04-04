@@ -1,71 +1,67 @@
+/**
+ * @fileoverview 借入人関連のAPI通信を行うサービス
+ * @module services/borrowerService
+ */
+
 import axios from 'axios';
-import { Borrower } from '../types/borrower';
+import { Borrower, NewBorrowerInput } from '../types/borrower';
 
-const API_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api/borrowers';
 
-export const BorrowerService = {
-  // 全件取得
-  getAllBorrowers: async (): Promise<Borrower[]> => {
-    try {
-      const response = await axios.get(`${API_URL}/borrowers`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching borrowers:', error);
-      throw error;
-    }
-  },
+/**
+ * すべての借入人データを取得する
+ *
+ * @async
+ * @function getBorrowers
+ * @returns {Promise<Borrower[]>} 借入人データの配列
+ * @throws {Error} API通信に失敗した場合
+ */
+export const getBorrowers = async (): Promise<Borrower[]> => {
+  try {
+    const response = await axios.get<Borrower[]>(API_BASE_URL);
+    return response.data;
+  } catch (error) {
+    console.error('借入人データの取得に失敗しました', error);
+    throw error;
+  }
+};
 
-  // 1件取得
-  getBorrowerById: async (id: number): Promise<Borrower> => {
-    try {
-      const response = await axios.get(`${API_URL}/borrowers/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching borrower with id ${id}:`, error);
-      throw error;
-    }
-  },
+/**
+ * 指定IDの借入人データを取得する
+ *
+ * @async
+ * @function getBorrowerById
+ * @param {number} id - 取得する借入人のID
+ * @returns {Promise<Borrower>} 借入人データ
+ * @throws {Error} API通信に失敗した場合
+ */
+export const getBorrowerById = async (id: number): Promise<Borrower> => {
+  try {
+    const response = await axios.get<Borrower>(`${API_BASE_URL}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`ID ${id} の借入人データの取得に失敗しました`, error);
+    throw error;
+  }
+};
 
-  // 新規作成
-  createBorrower: async (borrower: Borrower): Promise<Borrower> => {
-    try {
-      const response = await axios.post(`${API_URL}/borrowers`, borrower);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating borrower:', error);
-      throw error;
-    }
-  },
-
-  // 更新
-  updateBorrower: async (id: number, borrower: Borrower): Promise<Borrower> => {
-    try {
-      const response = await axios.put(`${API_URL}/borrowers/${id}`, borrower);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating borrower with id ${id}:`, error);
-      throw error;
-    }
-  },
-
-  // 削除
-  deleteBorrower: async (id: number): Promise<void> => {
-    try {
-      await axios.delete(`${API_URL}/borrowers/${id}`);
-    } catch (error) {
-      console.error(`Error deleting borrower with id ${id}:`, error);
-      throw error;
-    }
-  },
-
-  // 検索
-  searchBorrowers: async (params: { name?: string, creditRating?: string, industry?: string }): Promise<Borrower[]> => {
-    try {
-      const response = await axios.get(`${API_URL}/borrowers/search`, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Error searching borrowers:', error);
-      throw error;
-    }
+/**
+ * 新しい借入人を登録する
+ *
+ * @async
+ * @function createBorrower
+ * @param {NewBorrowerInput} borrowerData - 新規登録する借入人データ
+ * @returns {Promise<Borrower>} 登録された借入人データ
+ * @throws {Error} API通信に失敗した場合
+ */
+export const createBorrower = async (
+  borrowerData: NewBorrowerInput
+): Promise<Borrower> => {
+  try {
+    const response = await axios.post<Borrower>(API_BASE_URL, borrowerData);
+    return response.data;
+  } catch (error) {
+    console.error('借入人の登録に失敗しました', error);
+    throw error;
   }
 };
