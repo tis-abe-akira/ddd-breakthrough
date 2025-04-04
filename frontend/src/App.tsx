@@ -4,6 +4,7 @@ import Layout from './components/layout/Layout'
 import HomePage from './pages/HomePage'
 import BorrowersPage from './pages/BorrowersPage'
 import NewBorrowerPage from './pages/NewBorrowerPage'
+import BorrowerDetailPage from './pages/BorrowerDetailPage'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/borrowers" element={<BorrowersPage />} />
           <Route path="/borrowers/new" element={<NewBorrowerPage />} />
+          <Route path="/borrowers/:id" element={<BorrowerDetailPage />} />
         </Routes>
       </Layout>
     </Router>
