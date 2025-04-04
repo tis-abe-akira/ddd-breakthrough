@@ -140,10 +140,6 @@ const BorrowerDetailPage: React.FC = () => {
             <h2 className="text-sm font-medium text-gray-500">借入人名</h2>
             <p className="text-lg">{borrower.name}</p>
           </div>
-          <div>
-            <h2 className="text-sm font-medium text-gray-500">借入人コード</h2>
-            <p className="text-lg">{borrower.code}</p>
-          </div>
         </div>
         
         <div className="space-y-4">
