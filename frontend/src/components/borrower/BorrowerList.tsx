@@ -6,7 +6,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Borrower } from '../../types/borrower';
-import { BorrowerService } from '../../services/borrowerService';
+import axios from 'axios';
+import { getBorrowers } from '../../services/borrowerService';
 
 /**
  * 借入人一覧コンポーネント
@@ -25,37 +26,26 @@ const BorrowerList: React.FC = () => {
   useEffect(() => {
     const fetchBorrowers = async () => {
       try {
-        const data = await BorrowerService.getAllBorrowers();
+        const data = await getBorrowers();
         setBorrowers(data);
         setLoading(false);
-      } catch (err) {
-        setError('借入人データの取得に失敗しました。');
+      } catch (error: unknown) {
+        console.error('API Error:', error);
+        if (axios.isAxiosError(error)) {
+          setError(
+            `借入人データの取得に失敗しました。${error.response?.status === 404 ? 'APIが見つかりません。' : error.message}`
+          );
+        } else if (error instanceof Error) {
+          setError(`借入人データの取得に失敗しました。${error.message}`);
+        } else {
+          setError('借入人データの取得に失敗しました。');
+        }
         setLoading(false);
-        console.error(err);
       }
     };
 
     fetchBorrowers();
   }, []);
-
-  /**
-   * 借入人を削除する
-   *
-   * @param {number} id - 借入人ID
-   */
-  const handleDelete = async (id?: number) => {
-    if (!id) return;
-
-    if (window.confirm('本当に削除しますか？')) {
-      try {
-        await BorrowerService.deleteBorrower(id);
-        setBorrowers(borrowers.filter((borrower) => borrower.id !== id));
-      } catch (err) {
-        setError('削除に失敗しました。');
-        console.error(err);
-      }
-    }
-  };
 
   if (loading) {
     return <div className='text-center py-4'>読み込み中...</div>;
@@ -74,7 +64,7 @@ const BorrowerList: React.FC = () => {
         </Link>
       </div>
 
-      {borrowers.length === 0 ? (
+      {!borrowers || borrowers.length === 0 ? (
         <p className='text-gray-500 text-center py-4'>
           借入人データがありません。
         </p>
@@ -87,7 +77,6 @@ const BorrowerList: React.FC = () => {
                 <th>名前</th>
                 <th>信用格付</th>
                 <th>業種</th>
-                <th>企業形態</th>
                 <th>アクション</th>
               </tr>
             </thead>
@@ -98,7 +87,6 @@ const BorrowerList: React.FC = () => {
                   <td>{borrower.name}</td>
                   <td>{borrower.creditRating}</td>
                   <td>{borrower.industry || '-'}</td>
-                  <td>{borrower.companyType || '-'}</td>
                   <td>
                     <Link
                       to={`/borrowers/${borrower.id}`}
@@ -112,12 +100,6 @@ const BorrowerList: React.FC = () => {
                     >
                       編集
                     </Link>
-                    <button
-                      onClick={() => handleDelete(borrower.id)}
-                      className='link link-danger'
-                    >
-                      削除
-                    </button>
                   </td>
                 </tr>
               ))}

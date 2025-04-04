@@ -6,7 +6,11 @@
 import axios from 'axios';
 import { Borrower, NewBorrowerInput } from '../types/borrower';
 
+// バックエンドのAPIエンドポイントを指定
 const API_BASE_URL = '/api/borrowers';
+
+// Axiosのデフォルト設定
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 /**
  * すべての借入人データを取得する
@@ -19,6 +23,7 @@ const API_BASE_URL = '/api/borrowers';
 export const getBorrowers = async (): Promise<Borrower[]> => {
   try {
     const response = await axios.get<Borrower[]>(API_BASE_URL);
+    console.log('API Response:', response);
     return response.data;
   } catch (error) {
     console.error('借入人データの取得に失敗しました', error);
@@ -38,6 +43,7 @@ export const getBorrowers = async (): Promise<Borrower[]> => {
 export const getBorrowerById = async (id: number): Promise<Borrower> => {
   try {
     const response = await axios.get<Borrower>(`${API_BASE_URL}/${id}`);
+    console.log('API Response:', response);
     return response.data;
   } catch (error) {
     console.error(`ID ${id} の借入人データの取得に失敗しました`, error);
@@ -59,6 +65,7 @@ export const createBorrower = async (
 ): Promise<Borrower> => {
   try {
     const response = await axios.post<Borrower>(API_BASE_URL, borrowerData);
+    console.log('API Response:', response);
     return response.data;
   } catch (error) {
     console.error('借入人の登録に失敗しました', error);

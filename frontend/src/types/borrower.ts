@@ -9,8 +9,8 @@
  * @typedef {Object} Borrower
  * @property {number} id - 借入人ID
  * @property {string} name - 借入人名
- * @property {string} code - 借入人コード
- * @property {string} [industry] - 業種（オプショナル）
+ * @property {string} industry - 業種
+ * @property {string} companyType - 企業形態
  * @property {string} [creditRating] - 信用格付け（オプショナル）
  * @property {Date} createdAt - 作成日時
  * @property {Date} updatedAt - 更新日時
@@ -18,8 +18,8 @@
 export interface Borrower {
   id: number;
   name: string;
-  code: string;
-  industry?: string;
+  industry: string;
+  companyType: string;
   creditRating?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -30,14 +30,14 @@ export interface Borrower {
  *
  * @typedef {Object} NewBorrowerInput
  * @property {string} name - 借入人名
- * @property {string} code - 借入人コード
- * @property {string} [industry] - 業種（オプショナル）
+ * @property {string} industry - 業種
+ * @property {string} companyType - 企業形態
  * @property {string} [creditRating] - 信用格付け（オプショナル）
  */
 export interface NewBorrowerInput {
   name: string;
-  code: string;
-  industry?: string;
+  industry: string;
+  companyType: string;
   creditRating?: string;
 }
 
@@ -46,13 +46,11 @@ export interface NewBorrowerInput {
  *
  * @typedef {Object} BorrowerSearchCriteria
  * @property {string} [name] - 借入人名（部分一致）
- * @property {string} [code] - 借入人コード（部分一致）
  * @property {string} [industry] - 業種（完全一致）
  * @property {string} [creditRating] - 信用格付け（完全一致）
  */
 export interface BorrowerSearchCriteria {
   name?: string;
-  code?: string;
   industry?: string;
   creditRating?: string;
 }

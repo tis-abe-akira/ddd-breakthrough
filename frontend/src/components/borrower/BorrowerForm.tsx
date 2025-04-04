@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Borrower } from '../../types/borrower';
-import { BorrowerService } from '../../services/borrowerService';
+import { NewBorrowerInput } from '../../types/borrower';
+import { createBorrower } from '../../services/borrowerService';
 
 const BorrowerForm: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [borrower, setBorrower] = useState<Borrower>({
+  const [borrower, setBorrower] = useState<NewBorrowerInput>({
     name: '',
     creditRating: '',
     industry: '',
-    companyType: '',
-    contactInformation: '',
-    financialStatements: ''
+    companyType: ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -30,7 +28,7 @@ const BorrowerForm: React.FC = () => {
     setLoading(true);
     
     try {
-      await BorrowerService.createBorrower(borrower);
+      await createBorrower(borrower);
       setLoading(false);
       navigate('/borrowers');
     } catch (err) {
@@ -95,7 +93,7 @@ const BorrowerForm: React.FC = () => {
           
           <div className="form-group">
             <label htmlFor="industry" className="form-label">
-              業種
+              業種 <span style={{ color: '#ef4444' }}>*</span>
             </label>
             <input
               type="text"
@@ -103,53 +101,33 @@ const BorrowerForm: React.FC = () => {
               name="industry"
               value={borrower.industry || ''}
               onChange={handleChange}
+              required
               className="form-control"
             />
           </div>
           
           <div className="form-group">
             <label htmlFor="companyType" className="form-label">
-              企業形態
+              企業形態 <span style={{ color: '#ef4444' }}>*</span>
             </label>
-            <input
-              type="text"
+            <select
               id="companyType"
               name="companyType"
-              value={borrower.companyType || ''}
+              value={borrower.companyType}
               onChange={handleChange}
+              required
               className="form-control"
-            />
-          </div>
-          
-          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label htmlFor="contactInformation" className="form-label">
-              連絡先情報
-            </label>
-            <textarea
-              id="contactInformation"
-              name="contactInformation"
-              value={borrower.contactInformation || ''}
-              onChange={handleChange}
-              rows={3}
-              className="form-control"
-            />
-          </div>
-          
-          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label htmlFor="financialStatements" className="form-label">
-              財務情報
-            </label>
-            <textarea
-              id="financialStatements"
-              name="financialStatements"
-              value={borrower.financialStatements || ''}
-              onChange={handleChange}
-              rows={3}
-              className="form-control"
-            />
+            >
+              <option value="">選択してください</option>
+              <option value="corporation">株式会社</option>
+              <option value="llc">合同会社</option>
+              <option value="partnership">合名会社</option>
+              <option value="limited_partnership">合資会社</option>
+              <option value="other">その他</option>
+            </select>
           </div>
         </div>
-        
+
         <div className="form-actions">
           <button
             type="button"
