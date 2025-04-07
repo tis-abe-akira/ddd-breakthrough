@@ -15,14 +15,32 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;
 
+/**
+ * ポジション（融資ポジション）に関する操作を提供するサービスクラス。
+ * ファシリティとローンを共通のポジションとして扱うための処理を実装します。
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
 public class PositionService extends AbstractBaseService<Position, Long, Object, PositionRepository> {
 
+    /**
+     * ファシリティサービス
+     */
     private final FacilityService facilityService;
+
+    /**
+     * ローンサービス
+     */
     private final LoanService loanService;
 
+    /**
+     * コンストラクタ
+     *
+     * @param repository      ポジションリポジトリ
+     * @param facilityService ファシリティサービス
+     * @param loanService     ローンサービス
+     */
     public PositionService(
             PositionRepository repository,
             FacilityService facilityService,
@@ -32,11 +50,25 @@ public class PositionService extends AbstractBaseService<Position, Long, Object,
         this.loanService = loanService;
     }
 
+    /**
+     * エンティティにIDを設定します
+     *
+     * @param entity エンティティ
+     * @param id     設定するID
+     */
     @Override
     protected void setEntityId(Position entity, Long id) {
         entity.setId(id);
     }
 
+    /**
+     * DTOからエンティティへ変換します。
+     * DTOの型に応じて適切なサービスの変換メソッドを使用します。
+     *
+     * @param dto 変換するDTO（FacilityDtoまたはLoanDto）
+     * @return 変換されたエンティティ
+     * @throws BusinessException サポートされていないDTO型の場合
+     */
     @Override
     public Position toEntity(Object dto) {
         if (dto instanceof FacilityDto) {
@@ -47,6 +79,14 @@ public class PositionService extends AbstractBaseService<Position, Long, Object,
         throw new BusinessException("Unsupported DTO type", "INVALID_DTO_TYPE");
     }
 
+    /**
+     * エンティティからDTOへ変換します。
+     * エンティティの型に応じて適切なサービスの変換メソッドを使用します。
+     *
+     * @param entity 変換するエンティティ（FacilityまたはLoan）
+     * @return 変換されたDTO
+     * @throws BusinessException サポートされていないエンティティ型の場合
+     */
     @Override
     public Object toDto(Position entity) {
         if (entity instanceof Facility) {
@@ -57,13 +97,24 @@ public class PositionService extends AbstractBaseService<Position, Long, Object,
         throw new BusinessException("Unsupported entity type", "INVALID_ENTITY_TYPE");
     }
 
-    // 型を指定して取得するメソッド
+    /**
+     * IDを指定してファシリティを検索します
+     *
+     * @param id ポジションID
+     * @return ファシリティDTO（存在しない場合はEmpty）
+     */
     public Optional<FacilityDto> findFacilityById(Long id) {
         return repository.findById(id)
                 .filter(position -> position instanceof Facility)
                 .map(position -> facilityService.toDto((Facility) position));
     }
 
+    /**
+     * IDを指定してローンを検索します
+     *
+     * @param id ポジションID
+     * @return ローンDTO（存在しない場合はEmpty）
+     */
     public Optional<LoanDto> findLoanById(Long id) {
         return repository.findById(id)
                 .filter(position -> position instanceof Loan)

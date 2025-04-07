@@ -16,24 +16,54 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * SharePie（シェア配分）に関する操作を提供するサービスクラス。
+ * ローンやファシリティにおける投資家の配分比率を管理します。
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
 public class SharePieService extends AbstractBaseService<SharePie, Long, SharePieDto, SharePieRepository> {
 
+    /**
+     * 投資家サービス
+     */
     private final InvestorService investorService;
+
+    /**
+     * 100パーセントを表す定数
+     */
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100.0000");
 
+    /**
+     * コンストラクタ
+     *
+     * @param repository      SharePieリポジトリ
+     * @param investorService 投資家サービス
+     */
     public SharePieService(SharePieRepository repository, InvestorService investorService) {
         super(repository);
         this.investorService = investorService;
     }
 
+    /**
+     * エンティティにIDを設定します
+     *
+     * @param entity エンティティ
+     * @param id     設定するID
+     */
     @Override
     protected void setEntityId(SharePie entity, Long id) {
         entity.setId(id);
     }
 
+    /**
+     * DTOからエンティティへ変換します
+     *
+     * @param dto 変換するDTO
+     * @return 変換されたエンティティ
+     * @throws BusinessException シェアのバリデーションに失敗した場合
+     */
     @Override
     public SharePie toEntity(SharePieDto dto) {
         SharePie entity = new SharePie();
@@ -44,6 +74,12 @@ public class SharePieService extends AbstractBaseService<SharePie, Long, SharePi
         return entity;
     }
 
+    /**
+     * エンティティからDTOへ変換します
+     *
+     * @param entity 変換するエンティティ
+     * @return 変換されたDTO
+     */
     @Override
     public SharePieDto toDto(SharePie entity) {
         SharePieDto dto = SharePieDto.builder()
@@ -55,15 +91,19 @@ public class SharePieService extends AbstractBaseService<SharePie, Long, SharePi
         // レスポンス用の追加情報
         Map<String, BigDecimal> investorShares = new HashMap<>();
         entity.getShares().forEach((investorId, share) -> {
-            investorService.findById(investorId).ifPresent(investor ->
-                investorShares.put(investor.getName(), share));
+            investorService.findById(investorId).ifPresent(investor -> investorShares.put(investor.getName(), share));
         });
         dto.setInvestorShares(investorShares);
 
         return dto;
     }
 
-    // シェアの検証
+    /**
+     * シェア配分をバリデーションします
+     *
+     * @param shares バリデーション対象のシェア配分
+     * @throws BusinessException バリデーションに失敗した場合
+     */
     private void validateShares(Map<Long, BigDecimal> shares) {
         if (shares == null || shares.isEmpty()) {
             throw new BusinessException("Shares cannot be empty", "EMPTY_SHARES");
@@ -83,20 +123,33 @@ public class SharePieService extends AbstractBaseService<SharePie, Long, SharePi
 
         if (total.compareTo(ONE_HUNDRED) != 0) {
             throw new BusinessException(
-                "Total shares must be 100%, but was: " + total, 
-                "INVALID_TOTAL_SHARE"
-            );
+                    "Total shares must be 100%, but was: " + total,
+                    "INVALID_TOTAL_SHARE");
         }
     }
 
-    // 投資家のシェアを取得
+    /**
+     * 投資家のシェアを取得します
+     *
+     * @param sharePieId SharePieのID
+     * @param investorId 投資家ID
+     * @return 投資家のシェア比率
+     * @throws BusinessException SharePieが見つからない場合
+     */
     public BigDecimal getInvestorShare(Long sharePieId, Long investorId) {
         return findById(sharePieId)
                 .map(dto -> dto.getShares().getOrDefault(investorId, BigDecimal.ZERO))
                 .orElseThrow(() -> new BusinessException("SharePie not found", "SHARE_PIE_NOT_FOUND"));
     }
 
-    // シェアの更新
+    /**
+     * シェア配分を更新します
+     *
+     * @param sharePieId SharePieのID
+     * @param newShares  新しいシェア配分
+     * @return 更新されたSharePieDTO
+     * @throws BusinessException SharePieが見つからない場合、またはバリデーションに失敗した場合
+     */
     @Transactional
     public SharePieDto updateShares(Long sharePieId, Map<Long, BigDecimal> newShares) {
         SharePie sharePie = repository.findById(sharePieId)
@@ -108,14 +161,24 @@ public class SharePieService extends AbstractBaseService<SharePie, Long, SharePi
         return toDto(repository.save(sharePie));
     }
 
-    // 最小シェア以上の投資家を検索
+    /**
+     * 最小シェア以上の投資家を含むSharePieを検索します
+     *
+     * @param minShare 最小シェア比率
+     * @return SharePieDTOのリスト
+     */
     public List<SharePieDto> findByMinimumShare(BigDecimal minShare) {
         return repository.findByMinimumShare(minShare).stream()
                 .map(this::toDto)
                 .toList();
     }
 
-    // 特定の投資家が参加しているシェアパイを検索
+    /**
+     * 特定の投資家が参加しているSharePieを検索します
+     *
+     * @param investorId 投資家ID
+     * @return SharePieDTOのリスト
+     */
     public List<SharePieDto> findByInvestorId(Long investorId) {
         return repository.findByInvestorId(investorId).stream()
                 .map(this::toDto)

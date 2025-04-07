@@ -22,16 +22,44 @@ import java.util.List;
 import java.time.temporal.ChronoUnit;
 import java.math.RoundingMode;
 
+/**
+ * ローン（融資）に関する操作を提供するサービスクラス。
+ * ローンの作成、更新、検索、シェア配分の管理などの機能を実装します。
+ */
 @Slf4j
 @Service
 @Transactional
 public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRepository> {
 
+    /**
+     * 借入人サービス
+     */
     private final BorrowerService borrowerService;
+
+    /**
+     * ファシリティサービス
+     */
     private final FacilityService facilityService;
+
+    /**
+     * シェア配分サービス
+     */
     private final SharePieService sharePieService;
+
+    /**
+     * 返済スケジュールリポジトリ
+     */
     private final RepaymentScheduleRepository repaymentScheduleRepository;
 
+    /**
+     * コンストラクタ
+     *
+     * @param repository                  ローンリポジトリ
+     * @param borrowerService             借入人サービス
+     * @param facilityService             ファシリティサービス
+     * @param sharePieService             シェア配分サービス
+     * @param repaymentScheduleRepository 返済スケジュールリポジトリ
+     */
     public LoanService(
             LoanRepository repository,
             BorrowerService borrowerService,
@@ -45,11 +73,24 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         this.repaymentScheduleRepository = repaymentScheduleRepository;
     }
 
+    /**
+     * エンティティにIDを設定します
+     *
+     * @param entity エンティティ
+     * @param id     設定するID
+     */
     @Override
     protected void setEntityId(Loan entity, Long id) {
         entity.setId(id);
     }
 
+    /**
+     * DTOからエンティティへ変換します
+     *
+     * @param dto 変換するDTO
+     * @return 変換されたエンティティ
+     * @throws BusinessException 借入人、ファシリティ、シェア配分が見つからない場合
+     */
     @Override
     public Loan toEntity(LoanDto dto) {
         Loan entity = new Loan();
@@ -59,7 +100,7 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         entity.setTotalAmount(dto.getTotalAmount());
         entity.setStartDate(dto.getStartDate());
         entity.setEndDate(dto.getEndDate());
-        entity.setTerm(dto.getTerm());  // termも設定！
+        entity.setTerm(dto.getTerm());
         entity.setInterestRate(dto.getInterestRate());
 
         // 借り手の設定
@@ -76,7 +117,7 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             entity.setFacility(facility);
         }
 
-        // シェアパイの設定を修正
+        // シェアパイの設定
         if (dto.getSharePieId() != null) {
             SharePie sharePie = sharePieService.findById(dto.getSharePieId())
                     .map(sharePieService::toEntity)
@@ -84,13 +125,19 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             entity.setSharePie(sharePie);
         }
 
-        // availableAmountの設定を追加（初期値は設定時の金額と同じ）
+        // 利用可能額の設定（初期値は設定時の金額と同じ）
         entity.setAvailableAmount(dto.getTotalAmount());
 
         entity.setVersion(dto.getVersion());
         return entity;
     }
 
+    /**
+     * エンティティからDTOへ変換します
+     *
+     * @param entity 変換するエンティティ
+     * @return 変換されたDTO
+     */
     @Override
     public LoanDto toDto(Loan entity) {
         LoanDto dto = LoanDto.builder()
@@ -101,7 +148,7 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .borrowerId(entity.getBorrower().getId())
                 .startDate(entity.getStartDate())
                 .endDate(entity.getEndDate())
-                .term(entity.getTerm())  // termを追加！
+                .term(entity.getTerm())
                 .interestRate(entity.getInterestRate())
                 .facilityId(entity.getFacility() != null ? entity.getFacility().getId() : null)
                 .sharePieId(entity.getSharePie() != null ? entity.getSharePie().getId() : null)
@@ -117,13 +164,16 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             dto.setSharePie(sharePieService.toDto(entity.getSharePie()));
         }
 
-        // TODO: 残額、返済済み金額、次回支払日、次回支払額の計算
-        // これらの値は取引履歴から計算する必要があり、TransactionServiceが必要
-
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 指定された借入人に関連するローンを検索します
+     *
+     * @param borrowerId 借入人ID
+     * @return ローンDTOのリスト
+     * @throws BusinessException 借入人が見つからない場合
+     */
     public List<LoanDto> findByBorrower(Long borrowerId) {
         Borrower borrower = borrowerService.findById(borrowerId)
                 .map(borrowerService::toEntity)
@@ -133,6 +183,13 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .toList();
     }
 
+    /**
+     * 指定されたファシリティに関連するローンを検索します
+     *
+     * @param facilityId ファシリティID
+     * @return ローンDTOのリスト
+     * @throws BusinessException ファシリティが見つからない場合
+     */
     public List<LoanDto> findByFacility(Long facilityId) {
         Facility facility = facilityService.findById(facilityId)
                 .map(facilityService::toEntity)
@@ -142,25 +199,51 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
                 .toList();
     }
 
+    /**
+     * 指定した金額より大きい総額を持つローンを検索します
+     *
+     * @param amount 金額基準
+     * @return ローンDTOのリスト
+     */
     public List<LoanDto> findByTotalAmountGreaterThan(BigDecimal amount) {
         return repository.findByTotalAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された期間に開始するローンを検索します
+     *
+     * @param startDate 期間開始日
+     * @param endDate   期間終了日
+     * @return ローンDTOのリスト
+     */
     public List<LoanDto> findByStartDateBetween(LocalDate startDate, LocalDate endDate) {
         return repository.findByStartDateBetween(startDate, endDate).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 指定された日付より後に終了するローンを検索します
+     *
+     * @param date 基準日
+     * @return ローンDTOのリスト
+     */
     public List<LoanDto> findByEndDateAfter(LocalDate date) {
         return repository.findByEndDateAfter(date).stream()
                 .map(this::toDto)
                 .toList();
     }
 
-    // シェアパイの更新
+    /**
+     * ローンのシェア配分を更新します
+     *
+     * @param loanId      ローンID
+     * @param sharePieDto 新しいシェア配分情報
+     * @return 更新されたローンDTO
+     * @throws BusinessException ローンが見つからない場合
+     */
     @Transactional
     public LoanDto updateSharePie(Long loanId, SharePieDto sharePieDto) {
         Loan loan = repository.findById(loanId)
@@ -172,6 +255,11 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
         return toDto(repository.save(loan));
     }
 
+    /**
+     * ローンの返済スケジュールを生成します
+     *
+     * @param loan 対象のローン
+     */
     public void generateRepaymentSchedules(Loan loan) {
         // 元本一括返済の場合
         RepaymentSchedule principalSchedule = new RepaymentSchedule();
@@ -195,12 +283,12 @@ public class LoanService extends AbstractBaseService<Loan, Long, LoanDto, LoanRe
             // 年利を日割り計算して3ヶ月分の利息を計算
             BigDecimal daysInPeriod = BigDecimal.valueOf(ChronoUnit.DAYS.between(currentDate, nextPaymentDate));
             BigDecimal yearlyInterest = loan.getTotalAmount()
-                .multiply(loan.getInterestRate())
-                .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP);
+                    .multiply(loan.getInterestRate())
+                    .divide(BigDecimal.valueOf(100), 10, RoundingMode.HALF_UP);
             BigDecimal periodInterest = yearlyInterest
-                .multiply(daysInPeriod)
-                .divide(BigDecimal.valueOf(365), 4, RoundingMode.HALF_UP);
-            
+                    .multiply(daysInPeriod)
+                    .divide(BigDecimal.valueOf(365), 4, RoundingMode.HALF_UP);
+
             interestSchedule.setInterestAmount(periodInterest);
             interestSchedule.setPaymentType(RepaymentSchedule.PaymentType.INTEREST);
             loan.addRepaymentSchedule(interestSchedule);
