@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,4 +22,6 @@ public class BorrowerDto {
     private String companyType;
     private String industry;
     private Long version;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

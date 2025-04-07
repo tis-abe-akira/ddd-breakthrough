@@ -40,6 +40,14 @@ public class BorrowerController {
     public ResponseEntity<BorrowerDto> update(
             @PathVariable Long id,
             @Valid @RequestBody BorrowerDto dto) {
+        // 既存のエンティティのバージョン情報を取得するために、まず既存のエンティティを取得
+        BorrowerDto existingDto = borrowerService.findById(id)
+                .orElseThrow(() -> new RuntimeException("借入人が見つかりません: ID=" + id));
+
+        // DTOにIDとバージョンを設定（クライアントから送られてこない場合に備えて）
+        dto.setId(id);
+        dto.setVersion(existingDto.getVersion());
+
         return ResponseEntity.ok(borrowerService.update(id, dto));
     }
 
