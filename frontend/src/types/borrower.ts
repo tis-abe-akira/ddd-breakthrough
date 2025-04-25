@@ -12,8 +12,10 @@
  * @property {string} industry - 業種
  * @property {string} companyType - 企業形態
  * @property {string} [creditRating] - 信用格付け（オプショナル）
- * @property {Date} createdAt - 作成日時
- * @property {Date} updatedAt - 更新日時
+ * @property {string} [contactInfo] - 連絡先情報（オプショナル）
+ * @property {string} [createdAt] - 作成日時（オプショナル）
+ * @property {string} [updatedAt] - 更新日時（オプショナル）
+ * @property {number} [version] - バージョン情報（オプティミスティックロック用）
  */
 export interface Borrower {
   id: number;
@@ -21,8 +23,10 @@ export interface Borrower {
   industry: string;
   companyType: string;
   creditRating?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  contactInfo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  version?: number; // バージョン情報を追加
 }
 
 /**
@@ -33,12 +37,16 @@ export interface Borrower {
  * @property {string} industry - 業種
  * @property {string} companyType - 企業形態
  * @property {string} [creditRating] - 信用格付け（オプショナル）
+ * @property {string} [contactInfo] - 連絡先情報（オプショナル）
+ * @property {number} [version] - バージョン情報（更新時に必要）
  */
 export interface NewBorrowerInput {
   name: string;
   industry: string;
   companyType: string;
   creditRating?: string;
+  contactInfo?: string;
+  version?: number; // バージョン情報を追加
 }
 
 /**

@@ -10,7 +10,8 @@ import { Borrower, NewBorrowerInput } from '../types/borrower';
 const API_BASE_URL = '/api/borrowers';
 
 // Axiosのデフォルト設定
-axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+axios.defaults.baseURL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 /**
  * すべての借入人データを取得する
@@ -69,6 +70,28 @@ export const createBorrower = async (
     return response.data;
   } catch (error) {
     console.error('借入人の登録に失敗しました', error);
+    throw error;
+  }
+};
+
+/**
+ * 既存の借入人情報を更新する
+ * @param id 更新対象の借入人ID
+ * @param borrowerData 更新用のデータ
+ * @returns 更新された借入人情報
+ */
+export const updateBorrower = async (
+  id: number,
+  borrowerData: NewBorrowerInput
+): Promise<Borrower> => {
+  try {
+    const response = await axios.put<Borrower>(
+      `${API_BASE_URL}/${id}`,
+      borrowerData
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`ID ${id} の借入人情報の更新に失敗しました`, error);
     throw error;
   }
 };
