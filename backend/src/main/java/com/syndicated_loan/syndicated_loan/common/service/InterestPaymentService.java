@@ -25,11 +25,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * 利息支払い操作を提供するサービスクラス。
+ * 
+ * <p>
+ * このサービスは、ローンに対する利息支払いの作成、更新、検索および
+ * 支払い実行処理を管理します。利息計算は返済スケジュールに基づいて行われ、
+ * 各投資家への配分はドローダウン時の配分比率に基づいて計算されます。
+ * </p>
+ * 
+ * <p>
+ * 利息計算はACTUAL/360方式を採用しており、利息期間の日数を基に正確な
+ * 計算を行います。また、支払い後のステータス管理や履歴の保持も行います。
+ * </p>
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class InterestPaymentService 
-    extends TransactionService<InterestPayment, InterestPaymentDto, InterestPaymentRepository> {
+public class InterestPaymentService
+        extends TransactionService<InterestPayment, InterestPaymentDto, InterestPaymentRepository> {
 
     private final LoanService loanService;
     private final InvestorService investorService;
@@ -54,11 +68,11 @@ public class InterestPaymentService
     // 返済スケジュールから利息支払い情報を取得
     private RepaymentSchedule findInterestSchedule(Long loanId, LocalDate date) {
         return repaymentScheduleRepository.findByScheduledDateAndStatus(date, RepaymentSchedule.PaymentStatus.SCHEDULED)
-            .stream()
-            .filter(schedule -> schedule.getLoan().getId().equals(loanId))
-            .filter(schedule -> schedule.getPaymentType() == RepaymentSchedule.PaymentType.INTEREST)
-            .findFirst()
-            .orElseThrow(() -> new BusinessException("Interest schedule not found", "INTEREST_SCHEDULE_NOT_FOUND"));
+                .stream()
+                .filter(schedule -> schedule.getLoan().getId().equals(loanId))
+                .filter(schedule -> schedule.getPaymentType() == RepaymentSchedule.PaymentType.INTEREST)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("Interest schedule not found", "INTEREST_SCHEDULE_NOT_FOUND"));
     }
 
     // ドローダウンのAmountPieを取得
@@ -72,18 +86,17 @@ public class InterestPaymentService
 
     // 利息の配分計算
     private Map<Long, BigDecimal> calculateInterestDistribution(
-        BigDecimal totalInterest,
-        AmountPie drawdownAmountPie
-    ) {
+            BigDecimal totalInterest,
+            AmountPie drawdownAmountPie) {
         Map<Long, BigDecimal> distribution = new HashMap<>();
         BigDecimal totalAmount = drawdownAmountPie.getAmounts().values().stream()
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         drawdownAmountPie.getAmounts().forEach((investorId, amount) -> {
             // 各投資家の配分比率に基づいて利息を計算
             BigDecimal ratio = amount.divide(totalAmount, 10, RoundingMode.HALF_UP);
             BigDecimal interestShare = totalInterest.multiply(ratio)
-                .setScale(4, RoundingMode.HALF_UP);
+                    .setScale(4, RoundingMode.HALF_UP);
             distribution.put(investorId, interestShare);
         });
 
@@ -99,32 +112,31 @@ public class InterestPaymentService
 
         // ローンの設定（関連する Position としても設定）
         Loan loan = loanService.findById(dto.getLoanId())
-            .map(loanService::toEntity)
-            .orElseThrow(() -> new BusinessException("Loan not found", "LOAN_NOT_FOUND"));
+                .map(loanService::toEntity)
+                .orElseThrow(() -> new BusinessException("Loan not found", "LOAN_NOT_FOUND"));
         entity.setLoan(loan);
-        entity.setRelatedPosition(loan);  // ここを追加
+        entity.setRelatedPosition(loan); // ここを追加
 
         // 返済スケジュールから利息情報を取得
-        RepaymentSchedule schedule = findInterestSchedule(dto.getLoanId(), 
-            dto.getDate().toLocalDate());
-        
+        RepaymentSchedule schedule = findInterestSchedule(dto.getLoanId(),
+                dto.getDate().toLocalDate());
+
         // スケジュールの金額を設定
         entity.setAmount(schedule.getInterestAmount());
         entity.setPaymentAmount(schedule.getInterestAmount());
-        
+
         // 期間の設定
         entity.setInterestStartDate(schedule.getScheduledDate());
         entity.setInterestEndDate(schedule.getScheduledDate());
-        
+
         // ローンの金利を設定
         entity.setInterestRate(loan.getInterestRate());
 
         // ドローダウンのAmountPieから配分を計算
         AmountPie drawdownAmountPie = getDrawdownAmountPie(loan);
         Map<Long, BigDecimal> distribution = calculateInterestDistribution(
-            schedule.getInterestAmount(), 
-            drawdownAmountPie
-        );
+                schedule.getInterestAmount(),
+                drawdownAmountPie);
 
         // 新しいAmountPieを作成
         AmountPieDto amountPieDto = new AmountPieDto();
@@ -199,7 +211,8 @@ public class InterestPaymentService
                 .toList();
     }
 
-    public List<InterestPaymentDto> findByLoanAndInterestStartDateBetween(Long loanId, LocalDate startDate, LocalDate endDate) {
+    public List<InterestPaymentDto> findByLoanAndInterestStartDateBetween(Long loanId, LocalDate startDate,
+            LocalDate endDate) {
         Loan loan = loanService.findById(loanId)
                 .map(loanService::toEntity)
                 .orElseThrow(() -> new BusinessException("Loan not found", "LOAN_NOT_FOUND"));
@@ -255,7 +268,8 @@ public class InterestPaymentService
         }
 
         // 利息期間の日数
-        long daysInPeriod = ChronoUnit.DAYS.between(interestPayment.getInterestStartDate(), interestPayment.getInterestEndDate());
+        long daysInPeriod = ChronoUnit.DAYS.between(interestPayment.getInterestStartDate(),
+                interestPayment.getInterestEndDate());
 
         // 利息計算（ACTUAL/360方式）
         BigDecimal newAmount = interestPayment.getLoan().getAmount()

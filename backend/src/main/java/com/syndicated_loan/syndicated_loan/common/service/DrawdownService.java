@@ -21,6 +21,21 @@ import java.util.List;
 import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * ドローダウン（融資引き出し）操作を提供するサービスクラス。
+ * 
+ * <p>
+ * このサービスは、ファシリティからの資金引き出しに関する処理を管理します。
+ * ドローダウン時にはファシリティの利用可能額を減少させるとともに、新たな
+ * ローンエンティティを生成します。また、投資家ごとのAmountPie（金額配分）も
+ * 作成・管理します。
+ * </p>
+ * 
+ * <p>
+ * ドローダウンの実行処理や金額の更新、特定条件での検索機能も提供します。
+ * 返済スケジュールの自動生成やファシリティ利用率の計算も行います。
+ * </p>
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -50,37 +65,37 @@ public class DrawdownService
         entity.setType("DRAWDOWN");
         entity.setDate(dto.getDate());
         entity.setAmount(dto.getDrawdownAmount());
-    
+
         // Facilityの設定
         Facility facility = facilityService.findById(dto.getRelatedFacilityId())
                 .map(facilityService::toEntity)
                 .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
         entity.setRelatedFacility(facility);
-    
+
         // Loanエンティティの作成と永続化
         LoanDto loanDto = LoanDto.builder()
-            .amount(dto.getDrawdownAmount())
-            .totalAmount(dto.getDrawdownAmount())
-            .borrowerId(facility.getBorrower().getId())
-            .facilityId(facility.getId())
-            .startDate(LocalDate.now())
-            .endDate(facility.getEndDate())
-            .term((int) ChronoUnit.MONTHS.between(LocalDate.now(), facility.getEndDate()))  // termを追加！
-            .interestRate(facility.getInterestRate())
-            .build();
-    
+                .amount(dto.getDrawdownAmount())
+                .totalAmount(dto.getDrawdownAmount())
+                .borrowerId(facility.getBorrower().getId())
+                .facilityId(facility.getId())
+                .startDate(LocalDate.now())
+                .endDate(facility.getEndDate())
+                .term((int) ChronoUnit.MONTHS.between(LocalDate.now(), facility.getEndDate())) // termを追加！
+                .interestRate(facility.getInterestRate())
+                .build();
+
         // Loanを永続化して関連付け
         LoanDto savedLoan = loanService.create(loanDto);
         entity.setRelatedPosition(loanService.toEntity(savedLoan));
-    
+
         // AmountPieの設定
         if (dto.getAmountPieId() != null) {
             AmountPie amountPie = amountPieService.findById(dto.getAmountPieId())
-                .map(amountPieService::toEntity)
-                .orElseThrow(() -> new BusinessException("AmountPie not found", "AMOUNT_PIE_NOT_FOUND"));
+                    .map(amountPieService::toEntity)
+                    .orElseThrow(() -> new BusinessException("AmountPie not found", "AMOUNT_PIE_NOT_FOUND"));
             entity.setAmountPie(amountPie);
         }
-    
+
         entity.setDrawdownAmount(dto.getDrawdownAmount());
         entity.setVersion(dto.getVersion());
         return entity;
@@ -124,7 +139,18 @@ public class DrawdownService
         return dto;
     }
 
-    // 追加の検索メソッド
+    /**
+     * 配下のファシリティに関連するドローダウンを探し出す術なり！
+     * 
+     * <p>
+     * 指定されたファシリティIDに紐づくドローダウンを一挙に取得せよ。
+     * 見つからぬ場合は敵将を討ち取れぬが如く例外を投げるぞ！
+     * </p>
+     *
+     * @param facilityId 探索すべきファシリティのID
+     * @return そのファシリティに関連するドローダウンのリスト
+     * @throws BusinessException ファシリティが見つからぬ場合に発せられる
+     */
     public List<DrawdownDto> findByRelatedFacility(Long facilityId) {
         Facility facility = facilityService.findById(facilityId)
                 .map(facilityService::toEntity)
@@ -134,12 +160,36 @@ public class DrawdownService
                 .toList();
     }
 
+    /**
+     * 指定された額よりも大なる金額のドローダウンを探し出す！
+     * 
+     * <p>
+     * 大軍を率いるが如く、大きな金額のドローダウンのみを抽出する。
+     * 武将の器の大きさを見極めるが如し！
+     * </p>
+     *
+     * @param amount 比較すべき基準額
+     * @return 指定された金額を上回るドローダウンのリスト
+     */
     public List<DrawdownDto> findByDrawdownAmountGreaterThan(BigDecimal amount) {
         return repository.findByDrawdownAmountGreaterThan(amount).stream()
                 .map(this::toDto)
                 .toList();
     }
 
+    /**
+     * 特定のファシリティに紐づき、かつ指定額を超える大金のドローダウンを探し出す！
+     * 
+     * <p>
+     * 大名の所領と財力を兼ね備えた重要なドローダウンを発見せよ。
+     * 二つの条件を満たす精鋭の如き取引のみを取得する。
+     * </p>
+     *
+     * @param facilityId 探索すべきファシリティのID
+     * @param amount     比較すべき基準額
+     * @return 条件を満たすドローダウンのリスト
+     * @throws BusinessException ファシリティが見つからぬ場合に発せられる
+     */
     public List<DrawdownDto> findByRelatedFacilityAndDrawdownAmountGreaterThan(Long facilityId, BigDecimal amount) {
         Facility facility = facilityService.findById(facilityId)
                 .map(facilityService::toEntity)
@@ -149,7 +199,19 @@ public class DrawdownService
                 .toList();
     }
 
-    // ドローダウン実行（ファシリティの利用可能額も更新）
+    /**
+     * ドローダウンを実行し、資金を引き出す決戦の時！
+     * 
+     * <p>
+     * 戦を決するが如く、ドローダウンを実行し、ファシリティの利用可能額を減少させる。
+     * また、投資家の現在の投資額を増加させ、ドローダウンの状態を「実行済み」と記す。
+     * 利用可能額が足りぬ場合は撤退のごとく例外を投げる！
+     * </p>
+     *
+     * @param drawdownId 実行すべきドローダウンのID
+     * @return 実行後のドローダウン情報
+     * @throws BusinessException ドローダウンが見つからぬ場合や、利用可能額が不足する場合に発せられる
+     */
     @Transactional
     public DrawdownDto executeDrawdown(Long drawdownId) {
         Drawdown drawdown = repository.findById(drawdownId)
@@ -177,7 +239,21 @@ public class DrawdownService
         return toDto(repository.save(drawdown));
     }
 
-    // ドローダウン金額の更新（実行前のみ可能）
+    /**
+     * ドローダウン金額を変更する、戦略の練り直しのごとし！
+     * 
+     * <p>
+     * 戦の前に兵力を再配置するが如く、実行前のドローダウン金額を更新する。
+     * 既に実行済みの場合は、過ぎたる戦を覆すことなかれと例外を投げる。
+     * また、新たな金額は正の数かつファシリティの利用可能額以下であるべし！
+     * </p>
+     *
+     * @param drawdownId 更新すべきドローダウンのID
+     * @param newAmount  新しく設定すべきドローダウン金額
+     * @return 更新されたドローダウン情報
+     * @throws BusinessException ドローダウンが見つからぬ場合、既に実行済みの場合、
+     *                           金額が不正な場合、または利用可能額を超える場合に発せられる
+     */
     @Transactional
     public DrawdownDto updateDrawdownAmount(Long drawdownId, BigDecimal newAmount) {
         Drawdown drawdown = repository.findById(drawdownId)
@@ -216,8 +292,8 @@ public class DrawdownService
 
         // 返済スケジュールの生成
         Drawdown drawdown = repository.findById(createdDto.getId())
-            .orElseThrow(() -> new BusinessException("Drawdown not found", "DRAWDOWN_NOT_FOUND"));
-        loanService.generateRepaymentSchedules((Loan)drawdown.getRelatedPosition());
+                .orElseThrow(() -> new BusinessException("Drawdown not found", "DRAWDOWN_NOT_FOUND"));
+        loanService.generateRepaymentSchedules((Loan) drawdown.getRelatedPosition());
 
         return createdDto;
     }
