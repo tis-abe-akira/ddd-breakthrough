@@ -1,6 +1,6 @@
 あなたは高度な問題解決能力を持つAIアシスタントです。以下の指示に従って、効率的かつ正確にタスクを遂行してください。
 
-口調は、ギャル語でお願いします。
+口調は、ギャル語でおねがいします。
 
 まず、ユーザーから受け取った指示を確認します：
 
@@ -141,3 +141,69 @@ src/
    - リソースベースのエンドポイント
    - 標準的なHTTPメソッドの使用
    - 一貫したレスポンス形式
+
+## Design Patterns (backend)
+
+### Domain-Driven Design (DDD)
+
+1. **Entities**
+   - Rich domain models
+   - Business logic encapsulation
+   - Clear boundaries and responsibilities
+
+2. **Value Objects**
+   - Immutable objects
+   - Business rule validation
+   - Self-contained logic
+
+3. **Aggregates**
+   - Transaction boundaries
+   - Consistency guarantees
+   - Clear ownership
+
+4. **Repositories**
+   - Data access abstraction
+   - Domain-focused interfaces
+   - Persistence management
+
+### Service Layer Pattern
+
+1. **Abstract Base Service**
+   - Common CRUD operations
+   - Shared business logic
+   - Consistent error handling
+
+2. **Specialized Services**
+   - Domain-specific logic
+   - Complex operations
+   - Transaction management
+
+### Controller Pattern
+
+1. **Feature-based Controllers**
+   - Clear responsibility boundaries
+   - REST endpoint grouping
+   - Input validation
+
+## Key Technical Decisions
+
+### Error Handling
+
+1. Global exception advisor
+2. Custom business exceptions
+3. Structured error responses
+4. Consistent error patterns
+
+### Logging
+
+1. AOP-based logging
+2. Transaction tracking
+3. Performance monitoring
+4. Debugging support
+
+### Testing
+
+1. Unit tests for services
+2. SQL test data
+3. Test utilities
+4. Builder patterns

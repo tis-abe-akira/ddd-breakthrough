@@ -18,6 +18,21 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * ファシリティ（融資枠）操作を提供するサービスクラス。
+ * 
+ * <p>
+ * このサービ���は、融資枠の作成、更新、検索などの基本操作を提供します。
+ * ファシリティは融資可能な総額（totalAmount）と現在の利用可能額（availableAmount）、
+ * 期間、金利などの情報を管理します。また、借入人、シンジケート団、投資家の配分比率
+ * （SharePie）との関連も管理します。
+ * </p>
+ * 
+ * <p>
+ * ファシリティは、ドローダウン（実際の資金引き出し）の元となり、
+ * 利用状況の追跡や利用率の計算、SharePie（配分比率）の管理を行います。
+ * </p>
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -95,7 +110,7 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         if (dto.getBorrowerId() == null && dto.getId() != null) {
             // 既存のFacilityからborrowerIdを取得
             Facility existingFacility = repository.findById(dto.getId())
-                .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
+                    .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
             dto.setBorrowerId(existingFacility.getBorrower().getId());
         }
 
@@ -214,6 +229,26 @@ public class FacilityService extends AbstractBaseService<Facility, Long, Facilit
         }
 
         facility.setSharePie(sharePie);
+        return toDto(repository.save(facility));
+    }
+
+    /**
+     * シェアパイを削除するメソッド
+     * @param facilityId ファシリティのID
+     * @param sharePieId シェアパイのID
+     * @return FacilityDto ファシリティのDTO
+     */
+    @Transactional
+    public FacilityDto removeSharePie(Long facilityId, Long sharePieId) {
+        Facility facility = repository.findById(facilityId)
+                .orElseThrow(() -> new BusinessException("Facility not found", "FACILITY_NOT_FOUND"));
+
+        if (facility.getSharePie() == null || !facility.getSharePie().getId().equals(sharePieId)) {
+            throw new BusinessException("SharePie not found or does not match", "SHARE_PIE_NOT_FOUND");
+        }
+
+        // シェアパイを削除
+        facility.setSharePie(null);
         return toDto(repository.save(facility));
     }
 }

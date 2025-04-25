@@ -16,6 +16,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * AmountPie（金額配分）に関する操作を提供するサービスクラス。
+ * 
+ * <p>
+ * AmountPieは投資家IDと具体的な金額のマッピングを管理し、ドローダウンや
+ * 支払いなどの取引における金額配分を表現します。SharePieがパーセント単位の
+ * 配分を管理するのに対し、AmountPieは実際の金額単位の配分を管理します。
+ * </p>
+ * 
+ * <p>
+ * このサービスでは、金額配分の作成、更新、取得の他、投資家単位の金額取得や
+ * 特定条件での検索機能を提供します。また、投資家ごとの総額計算も可能です。
+ * </p>
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -54,8 +68,7 @@ public class AmountPieService extends AbstractBaseService<AmountPie, Long, Amoun
         // レスポンス用の追加情報
         Map<String, BigDecimal> investorAmounts = new HashMap<>();
         entity.getAmounts().forEach((investorId, amount) -> {
-            investorService.findById(investorId).ifPresent(investor ->
-                investorAmounts.put(investor.getName(), amount));
+            investorService.findById(investorId).ifPresent(investor -> investorAmounts.put(investor.getName(), amount));
         });
         dto.setInvestorAmounts(investorAmounts);
 

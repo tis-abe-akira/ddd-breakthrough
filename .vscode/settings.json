@@ -6,5 +6,9 @@
   "editor.fontSize": 12,
   "terminal.integrated.fontSize": 12,
   "chat.editor.fontSize": 12,
-  "debug.console.fontSize": 12
+  "debug.console.fontSize": 12,
+  "extensions.allowed": {
+    "github.copilot": false,
+    "github.copilot-chat": false,
+  }
 }

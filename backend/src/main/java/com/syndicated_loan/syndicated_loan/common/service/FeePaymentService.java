@@ -19,14 +19,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * 手数料支払い操作を提供するサービスクラス。
+ * 
+ * <p>
+ * このサービスは、ファシリティに関連する各種手数料（コミットメントフィー、
+ * アレンジメントフィーなど）の支払い処理を管理します。手数料の作成、更新、
+ * 検索および実行処理を提供し、投資家への配分はファシリティのSharePieに
+ * 基づいて計算されます。
+ * </p>
+ * 
+ * <p>
+ * 手数料率の計算や支払い後のステータス管理、履歴保持も行います。
+ * 各種手数料タイプに応じた検索機能も提供しています。
+ * </p>
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class FeePaymentService 
-    extends TransactionService<FeePayment, FeePaymentDto, FeePaymentRepository> {
+public class FeePaymentService
+        extends TransactionService<FeePayment, FeePaymentDto, FeePaymentRepository> {
 
     private final FacilityService facilityService;
-    private final SharePieService sharePieService;  // 追加！
+    private final SharePieService sharePieService; // 追加！
 
     public FeePaymentService(
             FeePaymentRepository repository,
@@ -34,10 +49,10 @@ public class FeePaymentService
             PositionService positionService,
             FacilityService facilityService,
             SharePieService sharePieService,
-            InvestorService investorService) {  // 追加！
+            InvestorService investorService) { // 追加！
         super(repository, amountPieService, positionService, investorService);
         this.facilityService = facilityService;
-        this.sharePieService = sharePieService;  // 追加！
+        this.sharePieService = sharePieService; // 追加！
     }
 
     @Override
@@ -46,7 +61,7 @@ public class FeePaymentService
         entity.setId(dto.getId());
         entity.setType("FEE_PAYMENT");
         entity.setDate(dto.getDate());
-        entity.setAmount(dto.getPaymentAmount());  // ここ追加！
+        entity.setAmount(dto.getPaymentAmount()); // ここ追加！
 
         // 関連するファシリティの設定
         Facility facility = facilityService.findById(dto.getFacilityId())
@@ -144,10 +159,9 @@ public class FeePaymentService
 
         // 新しい AmountPie の作成
         AmountPieDto amountPieDto = createAmountPieFromSharePie(
-            sharePie,
-            feePayment.getPaymentAmount()
-        );
-        
+                sharePie,
+                feePayment.getPaymentAmount());
+
         // AmountPie を保存して FeePayment に設定
         AmountPieDto savedAmountPie = amountPieService.create(amountPieDto);
         feePayment.setAmountPie(amountPieService.toEntity(savedAmountPie));
@@ -162,11 +176,11 @@ public class FeePaymentService
     // SharePie から AmountPie を生成するヘルパーメソッド
     private AmountPieDto createAmountPieFromSharePie(SharePie sharePie, BigDecimal totalAmount) {
         Map<Long, BigDecimal> amounts = new HashMap<>();
-        
+
         sharePie.getShares().forEach((investorId, sharePercentage) -> {
             BigDecimal amount = totalAmount
-                .multiply(sharePercentage)
-                .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
+                    .multiply(sharePercentage)
+                    .divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
             amounts.put(investorId, amount);
         });
 
